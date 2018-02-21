@@ -19,15 +19,16 @@ func main() {
 		util.HandleError(err, true)
 	}
 	database = s.DB("lambo")
+	lim := 25
 
-	for range controllers.NewPoller().Update {
-		fmt.Println("Iterating")
-	}
+	go controllers.StartMongoUpdater(database, lim)
 
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) {
-		f, _ := CMC.FetchEntries(25)
-		c.JSON(http.StatusOK, f)
+		var t []*CMC.Entry
+		t = CMC.FetchEntries(lim)
+		fmt.Println(t)
+		c.JSON(http.StatusOK, t)
 	})
 	router.Run()
 }
