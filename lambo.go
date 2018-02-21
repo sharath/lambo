@@ -7,6 +7,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"github.com/sharath/lambo/util"
 	"github.com/sharath/lambo/controllers"
+	"fmt"
 )
 
 var database *mgo.Database
@@ -19,7 +20,9 @@ func main() {
 	}
 	database = s.DB("lambo")
 
-	controllers.NewPoller().Poll()
+	for range controllers.NewPoller().Update {
+		fmt.Println("found one lul")
+	}
 
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) {
