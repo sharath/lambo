@@ -28,7 +28,15 @@ func main() {
 	router.GET("/", func(c *gin.Context) {
 		var me intern.MongoEntry
 		database.C("entries").Find(nil).One(&me)
-		c.HTML(http.StatusOK, "index.tmpl", me.Global)
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"TotalMarketCapUsd": me.Global.TotalMarketCapUsd,
+			"Total24HVolumeUsd": me.Global.Total24HVolumeUsd,
+			"BitcoinPercentageOfMarketCap": me.Global.BitcoinPercentageOfMarketCap,
+			"ActiveCurrencies": me.Global.ActiveCurrencies,
+			"ActiveAssets": me.Global.ActiveAssets,
+			"ActiveMarkets": me.Global.ActiveMarkets,
+			"LastUpdated": me.Global.LastUpdated,
+		})
 	})
 	router.Run()
 }
