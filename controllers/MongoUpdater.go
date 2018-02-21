@@ -40,11 +40,6 @@ func (m *MongoUpdater) start() {
 		t, _ = json.Marshal(entries)
 		json.Unmarshal(t, &me.Tokens)
 
-		// Let's make sure this works
-		for _, t := range me.Tokens {
-			fmt.Println(t.Name)
-			fmt.Println(t.Rank)
-			fmt.Println(t.PriceUsd)
-		}
+		m.db.C("entries").Insert(me)
 	}
 }
