@@ -3,6 +3,7 @@ package CMC
 import (
 	"net/http"
 	"encoding/json"
+	"github.com/sharath/lambo/util"
 )
 
 type GlobalData struct {
@@ -17,7 +18,10 @@ type GlobalData struct {
 
 func FetchStats() *GlobalData {
 	g := new(GlobalData)
-	resp, _ := http.Get("https://api.coinmarketcap.com/v1/global/")
+	resp, err := http.Get("https://api.coinmarketcap.com/v1/global/")
+	if err != nil {
+		util.HandleError(err, false)
+	}
 	defer resp.Body.Close()
 	json.NewDecoder(resp.Body).Decode(&g)
 	return g
