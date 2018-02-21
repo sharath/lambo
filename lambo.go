@@ -2,12 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"github.com/sharath/lambo/models/extern/CMC"
 	"gopkg.in/mgo.v2"
 	"github.com/sharath/lambo/util"
 	"github.com/sharath/lambo/controllers"
-	"fmt"
+	"net/http"
 )
 
 var database *mgo.Database
@@ -24,11 +22,13 @@ func main() {
 	go controllers.StartMongoUpdater(database, lim)
 
 	router := gin.Default()
+	router.LoadHTMLGlob("views/templates/*")
+	router.Static("/static", "views/static")
 	router.GET("/", func(c *gin.Context) {
-		var t []*CMC.Entry
-		t = CMC.FetchEntries(lim)
-		fmt.Println(t)
-		c.JSON(http.StatusOK, t)
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"title": "testing",
+			"content": "i really hope this works",
+		})
 	})
 	router.Run()
 }

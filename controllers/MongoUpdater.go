@@ -5,7 +5,6 @@ import (
 	"github.com/sharath/lambo/models/extern/CMC"
 	"github.com/sharath/lambo/models/intern"
 	"encoding/json"
-	"fmt"
 )
 
 type MongoUpdater struct {
