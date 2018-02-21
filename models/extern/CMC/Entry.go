@@ -1,11 +1,12 @@
 package CMC
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
-	"encoding/json"
 )
 
+// Entry is the storage for the JSON from the CMC api
 type Entry struct {
 	ID               string `json:"id"`
 	Name             string `json:"name"`
@@ -24,6 +25,7 @@ type Entry struct {
 	LastUpdated      string `json:"last_updated"`
 }
 
+// FetchEntries fetches the coin data from the CMC api
 func FetchEntries(lim int) []*Entry {
 	c := make([]*Entry, lim)
 	resp, _ := http.Get("https://api.coinmarketcap.com/v1/ticker/?limit=" + strconv.Itoa(lim))

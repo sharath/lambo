@@ -1,5 +1,6 @@
 package intern
 
+// Token represents each individual entry from the CMC api
 type Token struct {
 	ID               string `json:"id" bson:"id"`
 	Name             string `json:"name" bson:"name"`
@@ -18,6 +19,7 @@ type Token struct {
 	LastUpdated      string `json:"last_updated" bson:"last_updated"`
 }
 
+// Global represents the global data from the CMC api
 type Global struct {
 	TotalMarketCapUsd            int64   `json:"total_market_cap_usd" bson:"total_market_cap_usd"`
 	Total24HVolumeUsd            int64   `json:"total_24h_volume_usd" bson:"total_24h_volume_usd"`
@@ -28,6 +30,7 @@ type Global struct {
 	LastUpdated                  int     `json:"last_updated" bson:"last_updated"`
 }
 
+// MongoEntry is the internal model that is inserted into MongoDB
 type MongoEntry struct {
 	Tokens []*Token `json:"token_data" bson:"token_data"`
 	Global *Global  `json:"global_data" bson:"global_data"`

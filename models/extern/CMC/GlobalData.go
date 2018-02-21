@@ -1,11 +1,12 @@
 package CMC
 
 import (
-	"net/http"
 	"encoding/json"
 	"github.com/sharath/lambo/util"
+	"net/http"
 )
 
+// GlobalData is the storage for the JSON from the CMC api
 type GlobalData struct {
 	TotalMarketCapUsd            int64   `json:"total_market_cap_usd"`
 	Total24HVolumeUsd            int64   `json:"total_24h_volume_usd"`
@@ -16,6 +17,7 @@ type GlobalData struct {
 	LastUpdated                  int     `json:"last_updated"`
 }
 
+// FetchStats fetches the global data from the CMC api
 func FetchStats() *GlobalData {
 	g := new(GlobalData)
 	resp, err := http.Get("https://api.coinmarketcap.com/v1/global/")
