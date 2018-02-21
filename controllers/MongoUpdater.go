@@ -7,11 +7,13 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+// MongoUpdater adds MongoEntries into MongoDB on each tick from Poller
 type MongoUpdater struct {
 	db  *mgo.Database
 	lim int
 }
 
+// StartMongoUpdater initializes the MongoUpdater and returns it
 func StartMongoUpdater(db *mgo.Database, lim int) *MongoUpdater {
 	m := new(MongoUpdater)
 	m.db = db

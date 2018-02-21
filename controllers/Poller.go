@@ -5,12 +5,14 @@ import (
 	"time"
 )
 
+// Poller is a struct for handling updates on CMC
 type Poller struct {
 	last   int
 	gdata  *CMC.GlobalData
 	Update chan int
 }
 
+// StartPoller initializes the poller and returns it
 func StartPoller() *Poller {
 	p := new(Poller)
 	p.gdata = new(CMC.GlobalData)
