@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 )
 
-type CMCEntry struct {
+type Entry struct {
 	ID               string `json:"id"`
 	Name             string `json:"name"`
 	Symbol           string `json:"symbol"`
@@ -24,8 +24,8 @@ type CMCEntry struct {
 	LastUpdated      string `json:"last_updated"`
 }
 
-func FetchEntries(lim int) ([]*CMCEntry, error) {
-	c := make([]*CMCEntry, lim)
+func FetchEntries(lim int) ([]*Entry, error) {
+	c := make([]*Entry, lim)
 	resp, err := http.Get("https://api.coinmarketcap.com/v1/ticker/?limit=" + strconv.Itoa(lim))
 	if err != nil {
 		return c, err
