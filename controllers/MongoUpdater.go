@@ -24,7 +24,7 @@ func (m *MongoUpdater) start() {
 	// every time there's an update from poller
 	var me intern.MongoEntry
 	me.Tokens = make([]*intern.Token, m.lim)
-
+	me.Global = new(intern.Global)
 	var global *CMC.GlobalData
 	var entries []*CMC.Entry
 	for range StartPoller().Update {
