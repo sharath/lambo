@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"gopkg.in/mgo.v2"
+	"encoding/json"
 	"github.com/sharath/lambo/models/extern/CMC"
 	"github.com/sharath/lambo/models/intern"
-	"encoding/json"
+	"gopkg.in/mgo.v2"
 )
 
 type MongoUpdater struct {

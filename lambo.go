@@ -2,9 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"gopkg.in/mgo.v2"
-	"github.com/sharath/lambo/util"
 	"github.com/sharath/lambo/controllers"
+	"github.com/sharath/lambo/models/intern"
+	"github.com/sharath/lambo/util"
+	"gopkg.in/mgo.v2"
 	"net/http"
 )
 
@@ -25,9 +26,16 @@ func main() {
 	router.LoadHTMLGlob("views/templates/*")
 	router.Static("/static", "views/static")
 	router.GET("/", func(c *gin.Context) {
+		var me intern.MongoEntry
+		database.C("entries").Find(nil).One(&me)
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
-			"title": "testing",
-			"content": "i really hope this works",
+			"TotalMarketCapUsd":            me.Global.TotalMarketCapUsd,
+			"Total24HVolumeUsd":            me.Global.Total24HVolumeUsd,
+			"BitcoinPercentageOfMarketCap": me.Global.BitcoinPercentageOfMarketCap,
+			"ActiveCurrencies":             me.Global.ActiveCurrencies,
+			"ActiveAssets":                 me.Global.ActiveAssets,
+			"ActiveMarkets":                me.Global.ActiveMarkets,
+			"LastUpdated":                  me.Global.LastUpdated,
 		})
 	})
 	router.Run()

@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"time"
 	"github.com/sharath/lambo/models/extern/CMC"
+	"time"
 )
 
 type Poller struct {
