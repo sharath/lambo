@@ -1,4 +1,4 @@
-package external
+package CMC
 
 import (
 	"net/http"
@@ -24,12 +24,12 @@ type CMCEntry struct {
 	LastUpdated      string `json:"last_updated"`
 }
 
-func Fetch(lim int) ([]*CMCEntry,error) {
+func FetchEntries(lim int) ([]*CMCEntry, error) {
 	c := make([]*CMCEntry, lim)
-	resp, err := http.Get("https://api.coinmarketcap.com/v1/ticker/?limit="+strconv.Itoa(lim))
+	resp, err := http.Get("https://api.coinmarketcap.com/v1/ticker/?limit=" + strconv.Itoa(lim))
 	if err != nil {
 		return c, err
 	}
-	json.NewDecoder(resp.Body).Decode(&c)
+	err = json.NewDecoder(resp.Body).Decode(&c)
 	return c, err
 }
