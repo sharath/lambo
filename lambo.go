@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"github.com/sharath/lambo/models/external/CMC"
+	"github.com/sharath/lambo/models/extern/CMC"
 	"gopkg.in/mgo.v2"
 	"github.com/sharath/lambo/util"
 	"github.com/sharath/lambo/controllers"
@@ -21,7 +21,7 @@ func main() {
 	database = s.DB("lambo")
 
 	for range controllers.NewPoller().Update {
-		fmt.Println("found one lul")
+		fmt.Println("Iterating")
 	}
 
 	router := gin.Default()

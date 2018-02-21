@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"time"
-	"github.com/sharath/lambo/models/external/CMC"
+	"github.com/sharath/lambo/models/extern/CMC"
 )
 
 type Poller struct {
@@ -22,6 +22,7 @@ func NewPoller() *Poller {
 }
 
 func (p *Poller) start() {
+	// check every 10 seconds
 	for range time.NewTicker(time.Second * 10).C {
 		p.gdata.Update()
 		if p.gdata.LastUpdated != p.last {

@@ -1,4 +1,4 @@
-package internal
+package intern
 
 type MongoEntry struct {
 	Tokens []struct {
