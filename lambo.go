@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sharath/lambo/controllers"
-	"github.com/sharath/lambo/models/intern"
 	"github.com/sharath/lambo/util"
 	"gopkg.in/mgo.v2"
 	"net/http"
@@ -25,18 +24,21 @@ func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("views/templates/*")
 	router.Static("/static", "views/static")
-	router.GET("/", func(c *gin.Context) {
-		var me intern.MongoEntry
-		database.C("entries").Find(nil).One(&me)
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{
-			"TotalMarketCapUsd":            me.Global.TotalMarketCapUsd,
-			"Total24HVolumeUsd":            me.Global.Total24HVolumeUsd,
-			"BitcoinPercentageOfMarketCap": me.Global.BitcoinPercentageOfMarketCap,
-			"ActiveCurrencies":             me.Global.ActiveCurrencies,
-			"ActiveAssets":                 me.Global.ActiveAssets,
-			"ActiveMarkets":                me.Global.ActiveMarkets,
-			"LastUpdated":                  me.Global.LastUpdated,
-		})
-	})
+	router.GET("/", login)
+	router.POST("/authenticate", authenticate)
 	router.Run()
+}
+
+func login(context *gin.Context) {
+	context.HTML(http.StatusOK, "login.tmpl", gin.H{
+		"title": "Login",
+	})
+}
+
+func authenticate(context *gin.Context) {
+	u := gin.H{
+		"username": context.PostForm("username"),
+		"password": context.PostForm("password"),
+	}
+	context.JSON(http.StatusUnauthorized, u)
 }
