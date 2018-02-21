@@ -24,12 +24,9 @@ type Entry struct {
 	LastUpdated      string `json:"last_updated"`
 }
 
-func FetchEntries(lim int) ([]*Entry, error) {
+func FetchEntries(lim int) []*Entry {
 	c := make([]*Entry, lim)
-	resp, err := http.Get("https://api.coinmarketcap.com/v1/ticker/?limit=" + strconv.Itoa(lim))
-	if err != nil {
-		return c, err
-	}
-	err = json.NewDecoder(resp.Body).Decode(&c)
-	return c, err
+	resp, _ := http.Get("https://api.coinmarketcap.com/v1/ticker/?limit=" + strconv.Itoa(lim))
+	json.NewDecoder(resp.Body).Decode(&c)
+	return c
 }
