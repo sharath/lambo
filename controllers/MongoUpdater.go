@@ -30,7 +30,7 @@ func (m *MongoUpdater) start() {
 	for range StartPoller().Update {
 		// get values
 		entries = CMC.FetchEntries(m.lim)
-		global.FetchStats()
+		global = CMC.FetchStats()
 
 		// set intern values to extern ones
 		t, _ := json.Marshal(global)
