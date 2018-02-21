@@ -22,7 +22,8 @@ func NewPoller() *Poller {
 }
 
 func (p *Poller) start() {
-	for range time.NewTicker(time.Minute).C {
+	for range time.NewTicker(time.Second * 10).C {
+		p.gdata.Update()
 		if p.gdata.LastUpdated != p.last {
 			p.last = p.gdata.LastUpdated
 			p.Update <- p.last
