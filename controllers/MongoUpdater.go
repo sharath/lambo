@@ -28,7 +28,7 @@ func (m *MongoUpdater) start() {
 
 	var global *CMC.GlobalData
 	var entries []*CMC.Entry
-	for range NewPoller().Update {
+	for range StartPoller().Update {
 		// get values
 		entries = CMC.FetchEntries(m.lim)
 		global.FetchStats()
@@ -41,6 +41,10 @@ func (m *MongoUpdater) start() {
 		json.Unmarshal(t, &me.Tokens)
 
 		// Let's make sure this works
-		fmt.Println(me)
+		for _, t := range me.Tokens {
+			fmt.Println(t.Name)
+			fmt.Println(t.Rank)
+			fmt.Println(t.PriceUsd)
+		}
 	}
 }

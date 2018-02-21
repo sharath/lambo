@@ -11,7 +11,7 @@ type Poller struct {
 	Update chan int
 }
 
-func NewPoller() *Poller {
+func StartPoller() *Poller {
 	p := new(Poller)
 	p.gdata = new(CMC.GlobalData)
 	p.Update = make(chan int)
