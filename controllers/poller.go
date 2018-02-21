@@ -1,6 +1,9 @@
 package controllers
 
-import "time"
+import (
+	"time"
+	"fmt"
+)
 
 type Poller struct {
 	last string
@@ -10,10 +13,10 @@ func NewPoller() *Poller {
 	return new(Poller)
 }
 
-func Poll() {
+func (p *Poller) Poll() {
 	poll := func() {
 		for range time.NewTicker(time.Second).C {
-			print(time.Now())
+			fmt.Println(time.Now())
 		}
 	}
 	go poll()
