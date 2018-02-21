@@ -6,6 +6,7 @@ import (
 	"github.com/sharath/lambo/util"
 	"github.com/sharath/lambo/controllers"
 	"net/http"
+	"github.com/sharath/lambo/models/intern"
 )
 
 var database *mgo.Database
@@ -25,10 +26,9 @@ func main() {
 	router.LoadHTMLGlob("views/templates/*")
 	router.Static("/static", "views/static")
 	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{
-			"title": "testing",
-			"content": "i really hope this works",
-		})
+		var me intern.MongoEntry
+		database.C("entries").Find(nil).One(&me)
+		c.HTML(http.StatusOK, "index.tmpl", me.Global)
 	})
 	router.Run()
 }
