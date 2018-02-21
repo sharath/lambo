@@ -9,7 +9,7 @@ import (
 )
 
 type MongoUpdater struct {
-	db *mgo.Database
+	db  *mgo.Database
 	lim int
 }
 
@@ -24,12 +24,13 @@ func StartMongoUpdater(db *mgo.Database, lim int) *MongoUpdater {
 func (m *MongoUpdater) start() {
 	// every time there's an update from poller
 	var me intern.MongoEntry
+	me.Tokens = make([]*intern.Token, m.lim)
 
 	var global *CMC.GlobalData
-	var entries CMC.Entries
+	var entries []*CMC.Entry
 	for range NewPoller().Update {
 		// get values
-		entries.FetchEntries(m.lim)
+		entries = CMC.FetchEntries(m.lim)
 		global.FetchStats()
 
 		// set intern values to extern ones
