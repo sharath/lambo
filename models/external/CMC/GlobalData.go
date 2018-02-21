@@ -15,13 +15,8 @@ type GlobalData struct {
 	LastUpdated                  int     `json:"last_updated"`
 }
 
-func FetchGlobalStats() (*GlobalData, error) {
-	g := new(GlobalData)
-	resp, err := http.Get("https://api.coinmarketcap.com/v1/global/")
-	if err != nil {
-		return g, err
-	}
+func (g *GlobalData)Update() {
+	resp, _ := http.Get("https://api.coinmarketcap.com/v1/global/")
 	defer resp.Body.Close()
-	err = json.NewDecoder(resp.Body).Decode(&g)
-	return g, err
+	json.NewDecoder(resp.Body).Decode(&g)
 }
