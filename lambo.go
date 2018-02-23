@@ -6,6 +6,9 @@ import (
 	"github.com/sharath/lambo/util"
 	"gopkg.in/mgo.v2"
 	"net/http"
+	"gopkg.in/mgo.v2/bson"
+	"github.com/sharath/lambo/models/intern"
+	"fmt"
 )
 
 var database *mgo.Database
@@ -36,9 +39,17 @@ func login(context *gin.Context) {
 }
 
 func authenticate(context *gin.Context) {
-	u := gin.H{
-		"username": context.PostForm("username"),
-		"password": context.PostForm("password"),
+	checkCol := database.C("users")
+	u := context.PostForm("username")
+	p := context.PostForm("password")
+	fmt.Println(u, p)
+	var usr intern.User
+	checkCol.Find(bson.M{
+		"username": u,
+	}).One(&usr)
+	if usr.Password == p {
+		// TODO: return auth token
+	} else {
+		context.JSON(http.StatusUnauthorized, util.NewUnauthorizedResponse())
 	}
-	context.JSON(http.StatusUnauthorized, u)
 }
