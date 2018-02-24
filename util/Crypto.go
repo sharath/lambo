@@ -9,59 +9,71 @@ import (
 	"io"
 )
 
+// TOOD: fix UTF16(?) encoding for the strings
+
 // Hash returns a hash from a string
 func Hash(password string) string {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
 	return string(hash)
 }
 
+// CompareHash checks a hash and a string to see if they're the same
+func CompareHash(hash, check string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(check))
+	return err == nil
+}
+
 // NewEncryptionKey Generates a random encryption a key
-func NewEncryptionKey() ([]byte, error) {
+func NewEncryptionKey() (string, error) {
 	key := make([]byte, 32)
 	_, err := io.ReadFull(rand.Reader, key[:])
-	return key, err
+	return string(key[:]), err
 }
 
 // Encrypt encrypts plaintext using a key
-func Encrypt(plaintext []byte, key []byte) (ciphertext []byte, err error) {
+func Encrypt(input string, k string) (ciphertext string, err error) {
+	plaintext := []byte(input)
+	key := []byte(k)
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 	_, err = io.ReadFull(rand.Reader, nonce)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return gcm.Seal(nonce, nonce, plaintext, nil), nil
+	return string(gcm.Seal(nonce, nonce, plaintext, nil)[:]), nil
 }
 
 // Decrypt decrypts a cipher using a key
-func Decrypt(ciphertext []byte, key []byte) (plaintext []byte, err error) {
+func Decrypt(input string, k string) (plaintext string, err error) {
+	ciphertext := []byte(input)
+	key := []byte(k)
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if len(ciphertext) < gcm.NonceSize() {
-		return nil, errors.New("malformed ciphertext")
+		return "", errors.New("malformed ciphertext")
 	}
 
-	return gcm.Open(nil,
+	arr, err := gcm.Open(nil,
 		ciphertext[:gcm.NonceSize()],
 		ciphertext[gcm.NonceSize():],
-		nil,
-	)
+		nil, )
+	return string(arr[:]), err
 }
