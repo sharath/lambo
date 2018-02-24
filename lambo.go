@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sharath/lambo/controllers"
 	"github.com/sharath/lambo/models/intern"
@@ -40,17 +39,25 @@ func login(context *gin.Context) {
 }
 
 func getRegister(context *gin.Context) {
-	// TODO
+	context.HTML(http.StatusOK, "register.tmpl", gin.H{
+		"title": "Register",
+	})
 }
 
 func register(context *gin.Context) {
-	// TODO
+	u := context.PostForm("username")
+	p := context.PostForm("password")
+	user, err := intern.CreateUser(u, p, database.C("users"))
+	if err != nil {
+		context.JSON(http.StatusUnauthorized, util.NewUnauthorizedResponse())
+		return
+	}
+	context.JSON(http.StatusAccepted, user)
 }
 
 func authenticate(context *gin.Context) {
 	u := context.PostForm("username")
 	p := context.PostForm("password")
-	fmt.Println(u, p)
 	authKey, err := intern.AuthenticateUser(u, p, database.C("users"))
 	if err != nil {
 		context.JSON(http.StatusUnauthorized, util.NewUnauthorizedResponse())
