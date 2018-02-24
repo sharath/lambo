@@ -6,13 +6,45 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"errors"
 	"github.com/sharath/lambo/util"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
 	ID       string    `json:"id" bson:"id"`
 	Username string    `json:"username" bson:"username"`
 	Password string    `json:"password" bson:"password"`
-	AuthKey  [5]string `json:"auth_key" json:"auth_key"`
+	AuthKeys [5]string `json:"auth_key" json:"auth_key"`
+}
+
+func hash(password string) string {
+	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
+	return string(hash)
+}
+
+func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
+	var err error
+	payload := []byte(u.Username + u.Password)
+	key, err := util.NewEncryptionKey()
+	if err != nil {
+		return "", err
+	}
+	enc, err := util.Encrypt(payload, key)
+	if err != nil {
+		return "", err
+	}
+	for i := range u.AuthKeys {
+		if i != 0 {
+			u.AuthKeys[i] = u.AuthKeys[i-1]
+		}
+	}
+	u.AuthKeys[0] = string(key)
+	users.Update(bson.M{
+		"id": u.ID,
+	}, bson.M{
+		"id":        u.ID,
+		"auth_keys": u.AuthKeys,
+	})
+	return string(enc), err
 }
 
 func GenerateUserID(users *mgo.Collection) string {
@@ -40,10 +72,12 @@ func CreateUser(username string, password string, users *mgo.Collection) (*User,
 	if !ValidPassword(password) {
 		return u, errors.New("invalid password")
 	}
-
 	u.ID = GenerateUserID(users)
 	u.Username = username
-	u.Password = password
+	u.Password = hash(password)
+	if password == "" {
+		return u, errors.New("invalid password")
+	}
 	users.Insert(u)
 	return u, nil
 }
@@ -51,12 +85,8 @@ func CreateUser(username string, password string, users *mgo.Collection) (*User,
 func AuthenticateUser(username string, password string, users *mgo.Collection) (string, error) {
 	var user User
 	users.Find(bson.M{"username": username}).One(&user)
-	if user.Password == password {
-		var err error
-		payload := []byte(username + password)
-		key, err := util.NewEncryptionKey()
-		enc, err := util.Encrypt(payload, key)
-		return string(enc), err
+	if user.Password == hash(password) {
+		return user.getAuthKey(users)
 	} else {
 		return "", errors.New("invalid login")
 	}
