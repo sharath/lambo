@@ -3,13 +3,11 @@ package util
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"io"
-	"errors"
 	"crypto/rand"
+	"errors"
 	"golang.org/x/crypto/bcrypt"
+	"io"
 )
-
-
 
 // Hash returns a hash from a string
 func Hash(password string) string {
@@ -17,7 +15,6 @@ func Hash(password string) string {
 	return string(hash)
 }
 
-// Credit: https://github.com/gtank/cryptopasta
 // NewEncryptionKey Generates a random encryption a key
 func NewEncryptionKey() ([]byte, error) {
 	key := make([]byte, 32)
@@ -25,8 +22,6 @@ func NewEncryptionKey() ([]byte, error) {
 	return key, err
 }
 
-
-// Credit: https://github.com/gtank/cryptopasta
 // Encrypt encrypts plaintext using a key
 func Encrypt(plaintext []byte, key []byte) (ciphertext []byte, err error) {
 	block, err := aes.NewCipher(key[:])
@@ -48,8 +43,6 @@ func Encrypt(plaintext []byte, key []byte) (ciphertext []byte, err error) {
 	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
-
-// Credit: https://github.com/gtank/cryptopasta
 // Decrypt decrypts a cipher using a key
 func Decrypt(ciphertext []byte, key []byte) (plaintext []byte, err error) {
 	block, err := aes.NewCipher(key[:])

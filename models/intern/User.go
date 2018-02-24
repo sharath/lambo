@@ -1,13 +1,14 @@
 package intern
 
 import (
-	"gopkg.in/mgo.v2"
-	"strconv"
-	"gopkg.in/mgo.v2/bson"
 	"errors"
 	"github.com/sharath/lambo/util"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"strconv"
 )
 
+// User represents the MongoDB model for login/authentication
 type User struct {
 	ID       string    `json:"id" bson:"id"`
 	Username string    `json:"username" bson:"username"`
@@ -58,6 +59,7 @@ func validPassword(password string) bool {
 	return !(len(password) < 7)
 }
 
+// CreateUser makes a new user from a username and password and adds it to MongoDB
 func CreateUser(username string, password string, users *mgo.Collection) (*User, error) {
 	u := new(User)
 	if !validNewUsername(users, username) {
@@ -76,12 +78,12 @@ func CreateUser(username string, password string, users *mgo.Collection) (*User,
 	return u, nil
 }
 
+// AuthenticateUser checks a username/password to see if it's valid
 func AuthenticateUser(username string, password string, users *mgo.Collection) (string, error) {
 	var user User
 	users.Find(bson.M{"username": username}).One(&user)
 	if user.Password == util.Hash(password) {
 		return user.getAuthKey(users)
-	} else {
-		return "", errors.New("invalid login")
 	}
+	return "", errors.New("invalid login")
 }
