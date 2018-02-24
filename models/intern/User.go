@@ -82,7 +82,7 @@ func CreateUser(username string, password string, users *mgo.Collection) (*User,
 func AuthenticateUser(username string, password string, users *mgo.Collection) (string, error) {
 	var user User
 	users.Find(bson.M{"username": username}).One(&user)
-	if user.Password == util.Hash(password) {
+	if util.CompareHash(user.Password, util.Hash(password)) {
 		return user.getAuthKey(users)
 	}
 	return "", errors.New("invalid login")
