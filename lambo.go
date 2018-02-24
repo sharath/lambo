@@ -1,14 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sharath/lambo/controllers"
+	"github.com/sharath/lambo/models/intern"
 	"github.com/sharath/lambo/util"
 	"gopkg.in/mgo.v2"
 	"net/http"
-	"gopkg.in/mgo.v2/bson"
-	"github.com/sharath/lambo/models/intern"
-	"fmt"
 )
 
 var database *mgo.Database
@@ -28,7 +27,9 @@ func main() {
 	router.LoadHTMLGlob("views/templates/*")
 	router.Static("/static", "views/static")
 	router.GET("/", login)
+	router.GET("/register", getRegister)
 	router.POST("/authenticate", authenticate)
+	router.POST("/register", register)
 	router.Run()
 }
 
@@ -38,18 +39,24 @@ func login(context *gin.Context) {
 	})
 }
 
+func getRegister(context *gin.Context) {
+	// TODO
+}
+
+func register(context *gin.Context) {
+	// TODO
+}
+
 func authenticate(context *gin.Context) {
-	checkCol := database.C("users")
 	u := context.PostForm("username")
 	p := context.PostForm("password")
 	fmt.Println(u, p)
-	var usr intern.User
-	checkCol.Find(bson.M{
-		"username": u,
-	}).One(&usr)
-	if usr.Password == p {
-		// TODO: return auth token
-	} else {
+	authKey, err := intern.AuthenticateUser(u, p, database.C("users"))
+	if err != nil {
 		context.JSON(http.StatusUnauthorized, util.NewUnauthorizedResponse())
+		return
 	}
+	context.JSON(http.StatusAccepted, gin.H{
+		"key": authKey,
+	})
 }
