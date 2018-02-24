@@ -6,8 +6,16 @@ import (
 	"io"
 	"errors"
 	"crypto/rand"
+	"golang.org/x/crypto/bcrypt"
 )
 
+
+
+// Hash returns a hash from a string
+func Hash(password string) string {
+	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
+	return string(hash)
+}
 
 // Credit: https://github.com/gtank/cryptopasta
 // NewEncryptionKey Generates a random encryption a key

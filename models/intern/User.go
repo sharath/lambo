@@ -6,7 +6,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"errors"
 	"github.com/sharath/lambo/util"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -14,11 +13,6 @@ type User struct {
 	Username string    `json:"username" bson:"username"`
 	Password string    `json:"password" bson:"password"`
 	AuthKeys [5]string `json:"auth_key" json:"auth_key"`
-}
-
-func hash(password string) string {
-	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
-	return string(hash)
 }
 
 func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
@@ -47,12 +41,12 @@ func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 	return string(enc), err
 }
 
-func GenerateUserID(users *mgo.Collection) string {
+func generateUserID(users *mgo.Collection) string {
 	count, _ := users.Count()
 	return strconv.Itoa(count + 1)
 }
 
-func ValidNewUsername(users *mgo.Collection, username string) bool {
+func validNewUsername(users *mgo.Collection, username string) bool {
 	count, _ := users.Find(bson.M{"username": username}).Count()
 	if count != 0 {
 		return false
@@ -60,21 +54,21 @@ func ValidNewUsername(users *mgo.Collection, username string) bool {
 	return true
 }
 
-func ValidPassword(password string) bool {
+func validPassword(password string) bool {
 	return !(len(password) < 7)
 }
 
 func CreateUser(username string, password string, users *mgo.Collection) (*User, error) {
 	u := new(User)
-	if !ValidNewUsername(users, username) {
+	if !validNewUsername(users, username) {
 		return u, errors.New("invalid username")
 	}
-	if !ValidPassword(password) {
+	if !validPassword(password) {
 		return u, errors.New("invalid password")
 	}
-	u.ID = GenerateUserID(users)
+	u.ID = generateUserID(users)
 	u.Username = username
-	u.Password = hash(password)
+	u.Password = util.Hash(password)
 	if password == "" {
 		return u, errors.New("invalid password")
 	}
@@ -85,7 +79,7 @@ func CreateUser(username string, password string, users *mgo.Collection) (*User,
 func AuthenticateUser(username string, password string, users *mgo.Collection) (string, error) {
 	var user User
 	users.Find(bson.M{"username": username}).One(&user)
-	if user.Password == hash(password) {
+	if user.Password == util.Hash(password) {
 		return user.getAuthKey(users)
 	} else {
 		return "", errors.New("invalid login")
