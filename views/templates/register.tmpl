@@ -14,8 +14,16 @@
 <!-- Latest compiled JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <body>
-<div class="progress">
-    <div class="progress-bar progress-bar-striped" style="width:{{ .Percent }}%"></div>
-</div>
+
+<h1>{{ .title }}</h1>
+<form action="register" method="POST">
+    Username:<br>
+    <input type="text" name="username" id="username">
+    <br>
+    Password:<br>
+    <input type="password" name="password" id="password">
+    <input type="submit">
+</form>
+
 </body>
 </html>
