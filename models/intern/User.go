@@ -18,7 +18,7 @@ type User struct {
 
 func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 	var err error
-	payload := []byte(u.Username + u.Password)
+	payload := u.Username + u.Password
 	key, err := util.NewEncryptionKey()
 	if err != nil {
 		return "", err
@@ -32,14 +32,14 @@ func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 			u.AuthKeys[i] = u.AuthKeys[i-1]
 		}
 	}
-	u.AuthKeys[0] = string(key)
+	u.AuthKeys[0] = key
 	users.Update(bson.M{
 		"id": u.ID,
 	}, bson.M{
 		"id":        u.ID,
 		"auth_keys": u.AuthKeys,
 	})
-	return string(enc), err
+	return enc, err
 }
 
 func generateUserID(users *mgo.Collection) string {
@@ -82,7 +82,7 @@ func CreateUser(username string, password string, users *mgo.Collection) (*User,
 func AuthenticateUser(username string, password string, users *mgo.Collection) (string, error) {
 	var user User
 	users.Find(bson.M{"username": username}).One(&user)
-	if util.CompareHash(user.Password, util.Hash(password)) {
+	if util.CompareHash(user.Password, password) {
 		return user.getAuthKey(users)
 	}
 	return "", errors.New("invalid login")
