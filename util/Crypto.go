@@ -29,7 +29,9 @@ func NewEncryptionKey() (string, error) {
 }
 
 // Encrypt encrypts plaintext using a key
-func Encrypt(plaintext []byte, key []byte) (ciphertext string, err error) {
+func Encrypt(input string, k string) (ciphertext string, err error) {
+	plaintext := []byte(input)
+	key := []byte(k)
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		return "", err
@@ -50,7 +52,9 @@ func Encrypt(plaintext []byte, key []byte) (ciphertext string, err error) {
 }
 
 // Decrypt decrypts a cipher using a key
-func Decrypt(ciphertext []byte, key []byte) (plaintext string, err error) {
+func Decrypt(input string, k string) (plaintext string, err error) {
+	ciphertext := []byte(input)
+	key := []byte(k)
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		return "", err
