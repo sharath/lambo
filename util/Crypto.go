@@ -15,6 +15,12 @@ func Hash(password string) string {
 	return string(hash)
 }
 
+// CompareHash checks 2 Hashes to see if they're valid
+func CompareHash(hash1, hash2 string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash1), []byte(hash2))
+	return err == nil
+}
+
 // NewEncryptionKey Generates a random encryption a key
 func NewEncryptionKey() ([]byte, error) {
 	key := make([]byte, 32)
