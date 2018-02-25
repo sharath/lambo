@@ -18,7 +18,7 @@ type User struct {
 
 func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 	var err error
-	payload := u.Username + u.Password
+	payload := u.ID+u.Username
 	key, err := util.NewEncryptionKey()
 	if err != nil {
 		return "", err
