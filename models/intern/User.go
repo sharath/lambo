@@ -1,13 +1,12 @@
 package intern
 
 import (
+	"encoding/base64"
 	"errors"
 	"github.com/sharath/lambo/util"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
-	"fmt"
-	"encoding/base64"
 )
 
 // User represents the MongoDB model for login/authentication
@@ -36,7 +35,6 @@ func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 	users.Update(bson.M{
 		"id": u.ID,
 	}, u)
-	fmt.Println(u.AuthKeysD)
 	return enc, err
 }
 
