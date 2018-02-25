@@ -1,6 +1,7 @@
 package intern
 
 import (
+	"encoding/base64"
 	"errors"
 	"github.com/sharath/lambo/util"
 	"gopkg.in/mgo.v2"
@@ -10,15 +11,15 @@ import (
 
 // User represents the MongoDB model for login/authentication
 type User struct {
-	ID       string    `json:"id" bson:"id"`
-	Username string    `json:"username" bson:"username"`
-	Password string    `json:"password" bson:"password"`
-	AuthKeys [5]string `json:"auth_key" json:"auth_key"`
+	ID        string    `json:"id" bson:"id"`
+	Username  string    `json:"username" bson:"username"`
+	Password  string    `json:"password" bson:"password"`
+	AuthKeysD [5]string `json:"auth_key" json:"auth_key"`
 }
 
 func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 	var err error
-	payload := u.Username + u.Password
+	payload := u.Username
 	key, err := util.NewEncryptionKey()
 	if err != nil {
 		return "", err
@@ -27,19 +28,32 @@ func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	for i := range u.AuthKeys {
-		if i != 0 {
-			u.AuthKeys[i] = u.AuthKeys[i-1]
-		}
+	for i := len(u.AuthKeysD) - 1; i > 0; i-- {
+		u.AuthKeysD[i] = u.AuthKeysD[i-1]
 	}
-	u.AuthKeys[0] = key
+	u.AuthKeysD[0] = base64.StdEncoding.EncodeToString(key)
 	users.Update(bson.M{
 		"id": u.ID,
-	}, bson.M{
-		"id":        u.ID,
-		"auth_keys": u.AuthKeys,
-	})
+	}, u)
 	return enc, err
+}
+
+func VerifyAuthKey(id string, enc string, users *mgo.Collection) (bool, error) {
+	var user User
+	var match bool
+
+	err := users.Find(bson.M{"id": id}).One(&user)
+	if err != nil {
+		return match, errors.New("invalid id")
+	}
+	for _, key := range user.AuthKeysD {
+		k, _ := base64.StdEncoding.DecodeString(key)
+		decrypt, _ := util.Decrypt(enc, k)
+		if decrypt == user.Password {
+			match = true
+		}
+	}
+	return match, err
 }
 
 func generateUserID(users *mgo.Collection) string {
