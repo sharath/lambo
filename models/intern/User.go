@@ -27,18 +27,13 @@ func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	for i := range u.AuthKeys {
-		if i != 0 {
-			u.AuthKeys[i] = u.AuthKeys[i-1]
-		}
+	for i := len(u.AuthKeys) - 1; i > 0; i-- {
+		u.AuthKeys[i] = u.AuthKeys[i-1]
 	}
 	u.AuthKeys[0] = key
 	users.Update(bson.M{
 		"id": u.ID,
-	}, bson.M{
-		"id":        u.ID,
-		"auth_keys": u.AuthKeys,
-	})
+	}, u)
 	return enc, err
 }
 
