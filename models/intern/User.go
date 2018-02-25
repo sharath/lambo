@@ -6,13 +6,15 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
+	"fmt"
+	"encoding/base64"
 )
 
 // User represents the MongoDB model for login/authentication
 type User struct {
-	ID       string    `json:"id" bson:"id"`
-	Username string    `json:"username" bson:"username"`
-	Password string    `json:"password" bson:"password"`
+	ID        string    `json:"id" bson:"id"`
+	Username  string    `json:"username" bson:"username"`
+	Password  string    `json:"password" bson:"password"`
 	AuthKeysD [5]string `json:"auth_key" json:"auth_key"`
 }
 
@@ -30,10 +32,11 @@ func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 	for i := len(u.AuthKeysD) - 1; i > 0; i-- {
 		u.AuthKeysD[i] = u.AuthKeysD[i-1]
 	}
-	u.AuthKeysD[0] = key
+	u.AuthKeysD[0] = base64.StdEncoding.EncodeToString(key)
 	users.Update(bson.M{
 		"id": u.ID,
 	}, u)
+	fmt.Println(u.AuthKeysD)
 	return enc, err
 }
 
@@ -46,8 +49,9 @@ func VerifyAuthKey(id string, enc string, users *mgo.Collection) (bool, error) {
 		return match, errors.New("invalid id")
 	}
 	for _, key := range user.AuthKeysD {
-		dec, _ := util.Decrypt(enc, key)
-		if dec == user.Password {
+		k, _ := base64.StdEncoding.DecodeString(key)
+		decrypt, _ := util.Decrypt(enc, k)
+		if decrypt == user.Password {
 			match = true
 		}
 	}
