@@ -10,8 +10,6 @@ import (
 	"io"
 )
 
-// TOOD: fix UTF16(?) encoding for the strings
-
 // Hash returns a hash from a string
 func Hash(password string) string {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
