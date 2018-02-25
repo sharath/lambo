@@ -25,16 +25,15 @@ func CompareHash(hash, check string) bool {
 }
 
 // NewEncryptionKey Generates a random encryption a key
-func NewEncryptionKey() (string, error) {
+func NewEncryptionKey() ([]byte, error) {
 	key := make([]byte, 32)
 	_, err := io.ReadFull(rand.Reader, key[:])
-	return string(key[:]), err
+	return key, err
 }
 
 // Encrypt encrypts plaintext using a key and returns base64 version
-func Encrypt(input string, k string) (string, error) {
+func Encrypt(input string, key []byte) (string, error) {
 	plaintext := []byte(input)
-	key := []byte(k)
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		return "", err
@@ -55,12 +54,11 @@ func Encrypt(input string, k string) (string, error) {
 }
 
 // Decrypt decrypts a cipher using a key
-func Decrypt(input string, k string) (plaintext string, err error) {
+func Decrypt(input string, key []byte) (plaintext string, err error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(input)
 	if err != nil {
 		return "", err
 	}
-	key := []byte(k)
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		return "", err
