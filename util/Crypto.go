@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"io"
@@ -30,8 +31,8 @@ func NewEncryptionKey() (string, error) {
 	return string(key[:]), err
 }
 
-// Encrypt encrypts plaintext using a key
-func Encrypt(input string, k string) (ciphertext string, err error) {
+// Encrypt encrypts plaintext using a key and returns base64 version
+func Encrypt(input string, k string) (string, error) {
 	plaintext := []byte(input)
 	key := []byte(k)
 	block, err := aes.NewCipher(key[:])
@@ -49,13 +50,16 @@ func Encrypt(input string, k string) (ciphertext string, err error) {
 	if err != nil {
 		return "", err
 	}
-
-	return string(gcm.Seal(nonce, nonce, plaintext, nil)[:]), nil
+	ciphertext := base64.StdEncoding.EncodeToString(gcm.Seal(nonce, nonce, plaintext, nil))
+	return ciphertext, nil
 }
 
 // Decrypt decrypts a cipher using a key
 func Decrypt(input string, k string) (plaintext string, err error) {
-	ciphertext := []byte(input)
+	ciphertext, err := base64.StdEncoding.DecodeString(input)
+	if err != nil {
+		return "", err
+	}
 	key := []byte(k)
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -74,6 +78,6 @@ func Decrypt(input string, k string) (plaintext string, err error) {
 	arr, err := gcm.Open(nil,
 		ciphertext[:gcm.NonceSize()],
 		ciphertext[gcm.NonceSize():],
-		nil, )
+		nil)
 	return string(arr[:]), err
 }
