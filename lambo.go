@@ -10,18 +10,13 @@ import (
 )
 
 var database *mgo.Database
-var checked bool
+
 func initialRun() bool {
-	if !checked {
-		count, _ := database.C("users").Count()
-		if count != 0 {
-			return false
-		} else {
-			checked = true
-			return checked
-		}
+	count, _ := database.C("users").Count()
+	if count != 0 {
+		return false
 	}
-	return checked
+	return true
 }
 
 func main() {
@@ -44,6 +39,7 @@ func main() {
 	router.GET("/", login)
 	router.POST("/authenticate", authenticate)
 	router.POST("/register", register)
+	router.GET("/dashboard", dashboard)
 	router.Run(":80")
 }
 
@@ -93,20 +89,39 @@ func authenticate(context *gin.Context) {
 	// TODO set a cookie since authorized
 	// the below doesn't work for some reason
 
-	cookie := &http.Cookie{Name: "auth", Value: authKey, HttpOnly: false}
+	cookie := &http.Cookie{Name: "auth", Value: authKey, HttpOnly: false, Secure: true}
 	http.SetCookie(context.Writer, cookie)
 
 	dashboard(context)
 }
 
 func dashboard(context *gin.Context) {
+	// TODO make the dashboard template look nicer, add control buttons and endpoints
+	var e intern.MongoEntry
+	database.C("entries").Find(nil).One(&e)
+	var g intern.Global
+	if e.Global != nil {
+		g = *e.Global
+	} else {
+		// to prevent panics when mongodb is empty
+		// TODO do this better
+		g = intern.Global{
+			TotalMarketCapUsd:            0,
+			Total24HVolumeUsd:            0,
+			BitcoinPercentageOfMarketCap: 0,
+			ActiveCurrencies:             0,
+			ActiveAssets:                 0,
+			ActiveMarkets:                0,
+			LastUpdated:                  0,
+		}
+	}
 	context.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-		"TotalMarketCapUsd": "testing",
-		"Total24HVolumeUsd": "testing",
-		"BitcoinPercentageOfMarketCap": "testing",
-		"ActiveCurrencies": "testing",
-		"ActiveAssets": "testing",
-		"ActiveMarkets": "testing",
-		"LastUpdated": "testing",
+		"TotalMarketCapUsd":            g.TotalMarketCapUsd,
+		"Total24HVolumeUsd":            g.Total24HVolumeUsd,
+		"BitcoinPercentageOfMarketCap": g.BitcoinPercentageOfMarketCap,
+		"ActiveCurrencies":             g.ActiveCurrencies,
+		"ActiveAssets":                 g.ActiveAssets,
+		"ActiveMarkets":                g.ActiveMarkets,
+		"LastUpdated":                  g.LastUpdated,
 	})
 }
