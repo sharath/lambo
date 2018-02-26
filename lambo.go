@@ -7,7 +7,6 @@ import (
 	"github.com/sharath/lambo/util"
 	"gopkg.in/mgo.v2"
 	"net/http"
-	"fmt"
 )
 
 var database *mgo.Database
@@ -94,13 +93,11 @@ func authenticate(context *gin.Context) {
 func dashboard(context *gin.Context) {
 	authKey, err := context.Cookie("auth")
 	if err != nil {
-		fmt.Println(err)
 		forcelogin(context)
 		return
 	}
 	id, err := context.Cookie("id")
 	if err != nil {
-		fmt.Println(err)
 		forcelogin(context)
 		return
 	}
