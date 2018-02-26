@@ -105,7 +105,7 @@ func dashboard(context *gin.Context) {
 		return
 	}
 
-	valid, err:= intern.VerifyAuthKey(id, authKey, database.C("users"))
+	valid, err := intern.VerifyAuthKey(id, authKey, database.C("users"))
 	if err != nil || !valid {
 		forcelogin(context)
 		return
@@ -113,22 +113,13 @@ func dashboard(context *gin.Context) {
 
 	// TODO make the dashboard template look nicer, add control buttons and endpoints
 	var e intern.MongoEntry
-	database.C("entries").Find(nil).One(&e)
+	database.C("entries").Find(nil).Sort("-global_data.last_updated").One(&e)
 	var g intern.Global
 	if e.Global != nil {
 		g = *e.Global
 	} else {
-		// to prevent panics when mongodb is empty
-		// TODO do this better
-		g = intern.Global{
-			TotalMarketCapUsd:            0,
-			Total24HVolumeUsd:            0,
-			BitcoinPercentageOfMarketCap: 0,
-			ActiveCurrencies:             0,
-			ActiveAssets:                 0,
-			ActiveMarkets:                0,
-			LastUpdated:                  0,
-		}
+		context.Writer.Write([]byte("please wait until first entry is fetched"))
+		return
 	}
 	context.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
 		"TotalMarketCapUsd":            g.TotalMarketCapUsd,
