@@ -10,6 +10,8 @@ import (
 	"io"
 )
 
+var CookieCoding = base64.URLEncoding.WithPadding('*')
+
 // Hash returns a hash from a string
 func Hash(password string) string {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
@@ -47,13 +49,13 @@ func Encrypt(input string, key []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	ciphertext := base64.StdEncoding.EncodeToString(gcm.Seal(nonce, nonce, plaintext, nil))
+	ciphertext := CookieCoding.EncodeToString(gcm.Seal(nonce, nonce, plaintext, nil))
 	return ciphertext, nil
 }
 
 // Decrypt decrypts a cipher using a key
 func Decrypt(input string, key []byte) (plaintext string, err error) {
-	ciphertext, err := base64.StdEncoding.DecodeString(input)
+	ciphertext, err := CookieCoding.DecodeString(input)
 	if err != nil {
 		return "", err
 	}
