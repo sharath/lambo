@@ -10,13 +10,18 @@ import (
 )
 
 var database *mgo.Database
-
+var checked bool
 func initialRun() bool {
-	count, _ := database.C("users").Count()
-	if count != 0 {
-		return false
+	if !checked {
+		count, _ := database.C("users").Count()
+		if count != 0 {
+			return false
+		} else {
+			checked = true
+			return checked
+		}
 	}
-	return true
+	return checked
 }
 
 func main() {
