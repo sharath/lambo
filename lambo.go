@@ -7,6 +7,7 @@ import (
 	"github.com/sharath/lambo/util"
 	"gopkg.in/mgo.v2"
 	"net/http"
+	"fmt"
 )
 
 var database *mgo.Database
@@ -78,24 +79,38 @@ func register(context *gin.Context) {
 func authenticate(context *gin.Context) {
 	u := context.PostForm("username")
 	p := context.PostForm("password")
-	authKey, err := intern.AuthenticateUser(u, p, database.C("users"))
+	id, authKey, err := intern.AuthenticateUser(u, p, database.C("users"))
 	if err != nil {
-		context.HTML(http.StatusUnauthorized, "login.tmpl", gin.H{
-			"unauthorized":   true,
-			"justregistered": false,
-		})
+		forcelogin(context)
 		return
 	}
-	// TODO set a cookie since authorized
-	// the below doesn't work for some reason
-
-	cookie := &http.Cookie{Name: "auth", Value: authKey, HttpOnly: false, Secure: true}
-	http.SetCookie(context.Writer, cookie)
-
-	dashboard(context)
+	auth := &http.Cookie{Name: "auth", Value: authKey, HttpOnly: false}
+	user := &http.Cookie{Name: "id", Value: id, HttpOnly: false}
+	http.SetCookie(context.Writer, auth)
+	http.SetCookie(context.Writer, user)
+	context.Redirect(303, "dashboard")
 }
 
 func dashboard(context *gin.Context) {
+	authKey, err := context.Cookie("auth")
+	if err != nil {
+		fmt.Println(err)
+		forcelogin(context)
+		return
+	}
+	id, err := context.Cookie("id")
+	if err != nil {
+		fmt.Println(err)
+		forcelogin(context)
+		return
+	}
+
+	valid, err:= intern.VerifyAuthKey(id, authKey, database.C("users"))
+	if err != nil || !valid {
+		forcelogin(context)
+		return
+	}
+
 	// TODO make the dashboard template look nicer, add control buttons and endpoints
 	var e intern.MongoEntry
 	database.C("entries").Find(nil).One(&e)
@@ -123,5 +138,12 @@ func dashboard(context *gin.Context) {
 		"ActiveAssets":                 g.ActiveAssets,
 		"ActiveMarkets":                g.ActiveMarkets,
 		"LastUpdated":                  g.LastUpdated,
+	})
+}
+
+func forcelogin(context *gin.Context) {
+	context.HTML(http.StatusUnauthorized, "login.tmpl", gin.H{
+		"unauthorized":   true,
+		"justregistered": false,
 	})
 }

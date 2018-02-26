@@ -8,6 +8,55 @@ import (
 	"strconv"
 )
 
+// CreateUser makes a new user from a username and password and adds it to MongoDB
+func CreateUser(username string, password string, users *mgo.Collection) (*User, error) {
+	u := new(User)
+	if !validNewUsername(users, username) {
+		return u, errors.New("invalid username")
+	}
+	if !validPassword(password) {
+		return u, errors.New("invalid password")
+	}
+	u.ID = generateUserID(users)
+	u.Username = username
+	u.Password = util.Hash(password)
+	if password == "" {
+		return u, errors.New("invalid password")
+	}
+	users.Insert(u)
+	return u, nil
+}
+
+// AuthenticateUser checks a username/password to see if it's valid
+func AuthenticateUser(username string, password string, users *mgo.Collection) (string, string, error) {
+	var user User
+	users.Find(bson.M{"username": username}).One(&user)
+	if util.CompareHash(user.Password, password) {
+		authKey, err := user.getAuthKey(users)
+		return user.ID, authKey, err
+	}
+	return "", "", errors.New("invalid login")
+}
+
+// VerifyAuthKey returns whether a username authkey pair is valid
+func VerifyAuthKey(user string, enc string, users *mgo.Collection) (bool, error) {
+	var u User
+	var match bool
+
+	err := users.Find(bson.M{"id": user}).One(&u)
+	if err != nil {
+		return match, errors.New("invalid user")
+	}
+	for _, key := range u.AuthKeysD {
+		k, _ := util.CookieCoding.DecodeString(key)
+		decrypt, _ := util.Decrypt(enc, k)
+		if decrypt == u.Username {
+			match = true
+		}
+	}
+	return match, err
+}
+
 // User represents the MongoDB model for login/authentication
 type User struct {
 	ID        string    `json:"id" bson:"id"`
@@ -37,24 +86,6 @@ func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 	return enc, err
 }
 
-func VerifyAuthKey(id string, enc string, users *mgo.Collection) (bool, error) {
-	var user User
-	var match bool
-
-	err := users.Find(bson.M{"id": id}).One(&user)
-	if err != nil {
-		return match, errors.New("invalid id")
-	}
-	for _, key := range user.AuthKeysD {
-		k, _ := util.CookieCoding.DecodeString(key)
-		decrypt, _ := util.Decrypt(enc, k)
-		if decrypt == user.Password {
-			match = true
-		}
-	}
-	return match, err
-}
-
 func generateUserID(users *mgo.Collection) string {
 	count, _ := users.Count()
 	return strconv.Itoa(count + 1)
@@ -70,33 +101,4 @@ func validNewUsername(users *mgo.Collection, username string) bool {
 
 func validPassword(password string) bool {
 	return !(len(password) < 7)
-}
-
-// CreateUser makes a new user from a username and password and adds it to MongoDB
-func CreateUser(username string, password string, users *mgo.Collection) (*User, error) {
-	u := new(User)
-	if !validNewUsername(users, username) {
-		return u, errors.New("invalid username")
-	}
-	if !validPassword(password) {
-		return u, errors.New("invalid password")
-	}
-	u.ID = generateUserID(users)
-	u.Username = username
-	u.Password = util.Hash(password)
-	if password == "" {
-		return u, errors.New("invalid password")
-	}
-	users.Insert(u)
-	return u, nil
-}
-
-// AuthenticateUser checks a username/password to see if it's valid
-func AuthenticateUser(username string, password string, users *mgo.Collection) (string, error) {
-	var user User
-	users.Find(bson.M{"username": username}).One(&user)
-	if util.CompareHash(user.Password, password) {
-		return user.getAuthKey(users)
-	}
-	return "", errors.New("invalid login")
 }
