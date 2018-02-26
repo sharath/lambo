@@ -72,11 +72,6 @@ func register(context *gin.Context) {
 		})
 		return
 	}
-
-	context.HTML(http.StatusOK, "login.tmpl", gin.H{
-		"unauthorized":   true,
-		"justregistered": false,
-	})
 }
 
 func authenticate(context *gin.Context) {
