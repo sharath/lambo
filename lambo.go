@@ -11,6 +11,14 @@ import (
 
 var database *mgo.Database
 
+func initialRun() bool {
+	count, _ := database.C("users").Count()
+	if count != 0 {
+		return false
+	}
+	return true
+}
+
 func main() {
 	s, err := mgo.Dial("localhost")
 	defer s.Close()
@@ -22,37 +30,53 @@ func main() {
 
 	go controllers.StartMongoUpdater(database, lim)
 
+	//gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
+
 	router := gin.Default()
 	router.LoadHTMLGlob("views/templates/*")
 	router.Static("/static", "views/static")
 	router.GET("/", login)
-	router.GET("/register", getRegister)
 	router.POST("/authenticate", authenticate)
 	router.POST("/register", register)
-	router.Run()
+	router.Run(":80")
 }
 
 func login(context *gin.Context) {
+	if initialRun() {
+		context.HTML(http.StatusOK, "register.tmpl", gin.H{
+			"invalid": false,
+		})
+		return
+	}
 	context.HTML(http.StatusOK, "login.tmpl", gin.H{
-		"title": "Login",
-	})
-}
-
-func getRegister(context *gin.Context) {
-	context.HTML(http.StatusOK, "register.tmpl", gin.H{
-		"title": "Register",
+		"unauthorized":   false,
+		"justregistered": false,
 	})
 }
 
 func register(context *gin.Context) {
-	u := context.PostForm("username")
-	p := context.PostForm("password")
-	user, err := intern.CreateUser(u, p, database.C("users"))
-	if err != nil {
-		context.JSON(http.StatusUnauthorized, util.NewUnauthorizedResponse())
+	if initialRun() {
+		u := context.PostForm("username")
+		p := context.PostForm("password")
+		_, err := intern.CreateUser(u, p, database.C("users"))
+		if err == nil {
+			context.HTML(http.StatusOK, "login.tmpl", gin.H{
+				"unauthorized":   false,
+				"justregistered": true,
+			})
+			return
+		}
+		context.HTML(http.StatusOK, "register.tmpl", gin.H{
+			"invalid": true,
+		})
 		return
 	}
-	context.JSON(http.StatusAccepted, user)
+
+	context.HTML(http.StatusOK, "login.tmpl", gin.H{
+		"unauthorized":   true,
+		"justregistered": false,
+	})
 }
 
 func authenticate(context *gin.Context) {
@@ -60,10 +84,29 @@ func authenticate(context *gin.Context) {
 	p := context.PostForm("password")
 	authKey, err := intern.AuthenticateUser(u, p, database.C("users"))
 	if err != nil {
-		context.JSON(http.StatusUnauthorized, util.NewUnauthorizedResponse())
+		context.HTML(http.StatusUnauthorized, "login.tmpl", gin.H{
+			"unauthorized":   true,
+			"justregistered": false,
+		})
 		return
 	}
-	context.JSON(http.StatusAccepted, gin.H{
-		"key": authKey,
+	// TODO set a cookie since authorized
+	// the below doesn't work for some reason
+
+	cookie := &http.Cookie{Name: "auth", Value: authKey, HttpOnly: false}
+	http.SetCookie(context.Writer, cookie)
+
+	dashboard(context)
+}
+
+func dashboard(context *gin.Context) {
+	context.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+		"TotalMarketCapUsd": "testing",
+		"Total24HVolumeUsd": "testing",
+		"BitcoinPercentageOfMarketCap": "testing",
+		"ActiveCurrencies": "testing",
+		"ActiveAssets": "testing",
+		"ActiveMarkets": "testing",
+		"LastUpdated": "testing",
 	})
 }

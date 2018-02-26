@@ -21,8 +21,8 @@ type Token struct {
 
 // Global represents the global data from the CMC api
 type Global struct {
-	TotalMarketCapUsd            int64   `json:"total_market_cap_usd" bson:"total_market_cap_usd"`
-	Total24HVolumeUsd            int64   `json:"total_24h_volume_usd" bson:"total_24h_volume_usd"`
+	TotalMarketCapUsd            float64 `json:"total_market_cap_usd" bson:"total_market_cap_usd"`
+	Total24HVolumeUsd            float64 `json:"total_24h_volume_usd" bson:"total_24h_volume_usd"`
 	BitcoinPercentageOfMarketCap float64 `json:"bitcoin_percentage_of_market_cap" bson:"bitcoin_percentage_of_market_cap"`
 	ActiveCurrencies             int     `json:"active_currencies" bson:"active_currencies"`
 	ActiveAssets                 int     `json:"active_assets" bson:"active_assets"`
