@@ -9,3 +9,12 @@ Dashboard for CMC data collection for processing with [moon](https://github.com/
 ## [Demo](http://lambo.sharath.pro)
 
 Resets users every 10 minutes to pretend initial run.
+
+## To-do
+
+- [ ] Dashboard Templating
+- [ ] Add Endpoints for Dashboard Functions (start, stop, etc)
+- [ ] Implement Frontend for Dashboard Functions
+- [ ] Monitoring specific coins
+- [ ] Alert System for Changes
+- [ ] Data Visualization (charts, etc)
