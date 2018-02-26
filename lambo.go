@@ -42,7 +42,7 @@ func main() {
 	router.POST("/authenticate", authenticate)
 	router.POST("/register", register)
 	router.GET("/dashboard", dashboard)
-	router.Run(":8080")
+	router.Run(":80")
 }
 
 func login(context *gin.Context) {
