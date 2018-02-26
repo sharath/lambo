@@ -1,7 +1,6 @@
 package intern
 
 import (
-	"encoding/base64"
 	"errors"
 	"github.com/sharath/lambo/util"
 	"gopkg.in/mgo.v2"
@@ -31,7 +30,7 @@ func (u *User) getAuthKey(users *mgo.Collection) (string, error) {
 	for i := len(u.AuthKeysD) - 1; i > 0; i-- {
 		u.AuthKeysD[i] = u.AuthKeysD[i-1]
 	}
-	u.AuthKeysD[0] = base64.StdEncoding.EncodeToString(key)
+	u.AuthKeysD[0] = util.CookieCoding.EncodeToString(key)
 	users.Update(bson.M{
 		"id": u.ID,
 	}, u)
@@ -47,7 +46,7 @@ func VerifyAuthKey(id string, enc string, users *mgo.Collection) (bool, error) {
 		return match, errors.New("invalid id")
 	}
 	for _, key := range user.AuthKeysD {
-		k, _ := base64.StdEncoding.DecodeString(key)
+		k, _ := util.CookieCoding.DecodeString(key)
 		decrypt, _ := util.Decrypt(enc, k)
 		if decrypt == user.Password {
 			match = true
