@@ -8,7 +8,7 @@ Dashboard for CMC data collection for processing with [moon](https://github.com/
 
 ## [Demo](https://lambo.sharath.pro)
 
-Resets users every 10 minutes to pretend initial run.
+Resets users and auto-updates with master using [demo](https://github.com/sharath/demo)
 
 ## To-do
 
