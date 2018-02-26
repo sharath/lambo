@@ -1,6 +1,6 @@
 <!doctype html>
 <html>
-<title>{{ .title }}</title>
+<title>Register</title>
 <link rel="stylesheet" href="static/dashboard.css">
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
@@ -15,7 +15,12 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <body>
 
-<h1>{{ .title }}</h1>
+{{ if .invalid }}
+<div class="alert alert-warning">
+    <strong>Invalid Details!</strong>
+</div>
+{{ end }}
+<h1>Register</h1>
 <form action="register" method="POST">
     Username:<br>
     <input type="text" name="username" id="username">
