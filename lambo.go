@@ -30,8 +30,8 @@ func main() {
 
 	go controllers.StartMongoUpdater(database, lim)
 
-	//gin.SetMode(gin.ReleaseMode)
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
+	//gin.SetMode(gin.DebugMode)
 
 	router := gin.Default()
 	router.LoadHTMLGlob("views/templates/*")
@@ -40,7 +40,7 @@ func main() {
 	router.POST("/authenticate", authenticate)
 	router.POST("/register", register)
 	router.GET("/dashboard", dashboard)
-	router.Run(":80")
+	router.Run(":8080")
 }
 
 func login(context *gin.Context) {
