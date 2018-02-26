@@ -6,7 +6,7 @@ Dashboard for CMC data collection for processing with [moon](https://github.com/
 
 ![lambo](centenario.png)
 
-## [Demo](http://lambo.sharath.pro)
+## [Demo](https://lambo.sharath.pro)
 
 Resets users every 10 minutes to pretend initial run.
 
