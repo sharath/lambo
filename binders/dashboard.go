@@ -1,12 +1,12 @@
 package binders
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/sharath/lambo/models/intern"
 	"github.com/dustin/go-humanize"
-	"time"
-	"gopkg.in/mgo.v2"
+	"github.com/gin-gonic/gin"
 	"github.com/sharath/lambo/controllers"
+	"github.com/sharath/lambo/models/intern"
+	"gopkg.in/mgo.v2"
+	"time"
 )
 
 func GetDashboardBinding(database *mgo.Database, updater *controllers.MongoUpdater) gin.H {

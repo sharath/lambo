@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/sharath/lambo/binders"
 	"github.com/sharath/lambo/controllers"
 	"github.com/sharath/lambo/models/intern"
 	"github.com/sharath/lambo/util"
 	"gopkg.in/mgo.v2"
 	"net/http"
 	"os"
-	"github.com/sharath/lambo/binders"
 )
 
 var database *mgo.Database
