@@ -10,13 +10,18 @@ import (
 // MongoUpdater adds MongoEntries into MongoDB on each tick from Poller
 type MongoUpdater struct {
 	db          *mgo.Database
-	StartSignal chan struct{}
-	PauseSignal chan struct{}
 	P           *Poller
 	lim         int
 }
 
-// StartMongoUpdater initializes the MongoUpdater and returns it
+func (m *MongoUpdater) Status() string {
+	if m.P.paused {
+		return "Paused"
+	}
+	return "Running"
+}
+
+// NewMongoUpdater initializes the MongoUpdater and returns it
 func NewMongoUpdater(db *mgo.Database, lim int) *MongoUpdater {
 	m := new(MongoUpdater)
 	m.db = db
@@ -24,6 +29,7 @@ func NewMongoUpdater(db *mgo.Database, lim int) *MongoUpdater {
 	return m
 }
 
+// Start starts the MongoUpdater
 func (m *MongoUpdater) Start() {
 	// every time there's an update from poller
 	start := func() {
@@ -51,10 +57,12 @@ func (m *MongoUpdater) Start() {
 	go start()
 }
 
+// Resume the MongoUpdater
 func (m *MongoUpdater) Resume() {
 	m.P.Resume <- struct{}{}
 }
 
+// Pause the MongoUpdater
 func (m *MongoUpdater) Pause() {
 	m.P.Pause <- struct{}{}
 }
