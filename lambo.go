@@ -9,6 +9,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"net/http"
 	"time"
+	"os"
 )
 
 var database *mgo.Database
@@ -32,8 +33,15 @@ func main() {
 
 	go controllers.StartMongoUpdater(database, lim)
 
-	gin.SetMode(gin.ReleaseMode)
-	//gin.SetMode(gin.DebugMode)
+	prod := os.Getenv("LAMBO_PROD")
+	var port string
+	if prod != "" {
+		gin.SetMode(gin.DebugMode)
+		port = "8080"
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+		port = "80"
+	}
 
 	router := gin.Default()
 	router.LoadHTMLGlob("views/templates/*")
@@ -42,7 +50,7 @@ func main() {
 	router.POST("/authenticate", authenticate)
 	router.POST("/register", register)
 	router.GET("/dashboard", dashboard)
-	router.Run(":80")
+	router.Run(port)
 }
 
 func login(context *gin.Context) {
