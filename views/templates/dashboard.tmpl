@@ -60,13 +60,18 @@
         <div class="col">
             <div class="card">
                 <div class="card-body">
-                {{.ActiveMarkets}} Active Markets
+                    Status: {{.MongoUpdateStatus}}<br>
+                    <button type="button" class="btn btn-primary btn-sm">Start</button>
+                    <button type="button" class="btn btn-secondary btn-sm">Pause</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row"><div class="col">Last updated: {{.LastUpdated}}</div><div class="col">{{ .NumberOfEntries }} Entries</div></div>
+    <div class="row">
+        <div class="col">Last updated: {{.LastUpdated}}</div>
+        <div class="col">{{ .NumberOfEntries }} Entries</div>
+    </div>
 </div>
 </body>
 </html>
