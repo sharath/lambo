@@ -9,9 +9,9 @@ import (
 
 // MongoUpdater adds MongoEntries into MongoDB on each tick from Poller
 type MongoUpdater struct {
-	db          *mgo.Database
-	P           *Poller
-	lim         int
+	db  *mgo.Database
+	P   *Poller
+	lim int
 }
 
 func (m *MongoUpdater) Status() string {
@@ -39,6 +39,7 @@ func (m *MongoUpdater) Start() {
 		var global *CMC.GlobalData
 		var entries []*CMC.Entry
 		m.P = NewPoller()
+		m.P.Start()
 		for range m.P.Update {
 			// get values
 			entries = CMC.FetchEntries(m.lim)
@@ -59,10 +60,10 @@ func (m *MongoUpdater) Start() {
 
 // Resume the MongoUpdater
 func (m *MongoUpdater) Resume() {
-	m.P.Resume <- struct{}{}
+	m.P.Resume <- '1'
 }
 
 // Pause the MongoUpdater
 func (m *MongoUpdater) Pause() {
-	m.P.Pause <- struct{}{}
+	m.P.Pause <- '1'
 }
