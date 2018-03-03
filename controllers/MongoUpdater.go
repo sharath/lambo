@@ -10,6 +10,8 @@ import (
 // MongoUpdater adds MongoEntries into MongoDB on each tick from Poller
 type MongoUpdater struct {
 	db  *mgo.Database
+	StartSignal chan struct {}
+	PauseSignal chan struct {}
 	lim int
 }
 
