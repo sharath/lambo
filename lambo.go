@@ -29,10 +29,10 @@ func main() {
 	var port string
 	if prod != "" {
 		gin.SetMode(gin.DebugMode)
-		port = "8080"
+		port = ":8080"
 	} else {
 		gin.SetMode(gin.ReleaseMode)
-		port = "80"
+		port = ":80"
 	}
 
 	router := gin.Default()
