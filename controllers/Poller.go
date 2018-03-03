@@ -19,6 +19,7 @@ type Poller struct {
 // NewPoller initializes the poller and returns it
 func NewPoller() *Poller {
 	p := new(Poller)
+	p.paused = true
 	p.gdata = new(CMC.GlobalData)
 	p.Update = make(chan int)
 	p.Resume = make(chan struct{})
