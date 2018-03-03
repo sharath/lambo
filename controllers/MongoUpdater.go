@@ -12,11 +12,12 @@ type MongoUpdater struct {
 	db  *mgo.Database
 	StartSignal chan struct {}
 	PauseSignal chan struct {}
+	P *Poller
 	lim int
 }
 
 // StartMongoUpdater initializes the MongoUpdater and returns it
-func StartMongoUpdater(db *mgo.Database, lim int) *MongoUpdater {
+func NewMongoUpdater(db *mgo.Database, lim int) *MongoUpdater {
 	m := new(MongoUpdater)
 	m.db = db
 	m.lim = lim
@@ -31,7 +32,8 @@ func (m *MongoUpdater) start() {
 	me.Global = new(intern.Global)
 	var global *CMC.GlobalData
 	var entries []*CMC.Entry
-	for range StartPoller().Update {
+	m.P = NewPoller()
+	for range m.P.Update {
 		// get values
 		entries = CMC.FetchEntries(m.lim)
 		global = CMC.FetchStats()
@@ -45,4 +47,12 @@ func (m *MongoUpdater) start() {
 
 		m.db.C("entries").Insert(me)
 	}
+}
+
+func (m *MongoUpdater) Resume() {
+	m.P.Resume <- struct{}{}
+}
+
+func (m *MongoUpdater) Pause() {
+	m.P.Pause <- struct{}{}
 }
