@@ -1,15 +1,14 @@
 package main
 
 import (
-	"github.com/dustin/go-humanize"
 	"github.com/gin-gonic/gin"
 	"github.com/sharath/lambo/controllers"
 	"github.com/sharath/lambo/models/intern"
 	"github.com/sharath/lambo/util"
 	"gopkg.in/mgo.v2"
 	"net/http"
-	"time"
 	"os"
+	"github.com/sharath/lambo/binders"
 )
 
 var database *mgo.Database
@@ -74,15 +73,10 @@ func signal(context *gin.Context) {
 
 func login(context *gin.Context) {
 	if initialRun() {
-		context.HTML(http.StatusOK, "register.tmpl", gin.H{
-			"invalid": false,
-		})
+		context.HTML(http.StatusOK, "register.tmpl", binders.GetRegisterBinding(false))
 		return
 	}
-	context.HTML(http.StatusOK, "login.tmpl", gin.H{
-		"unauthorized":   false,
-		"justregistered": false,
-	})
+	context.HTML(http.StatusOK, "login.tmpl", binders.GetLoginBinding(false, false))
 }
 
 func register(context *gin.Context) {
@@ -91,15 +85,10 @@ func register(context *gin.Context) {
 		p := context.PostForm("password")
 		_, err := intern.CreateUser(u, p, database.C("users"))
 		if err == nil {
-			context.HTML(http.StatusOK, "login.tmpl", gin.H{
-				"unauthorized":   false,
-				"justregistered": true,
-			})
+			context.HTML(http.StatusOK, "login.tmpl", binders.GetLoginBinding(false, true))
 			return
 		}
-		context.HTML(http.StatusOK, "register.tmpl", gin.H{
-			"invalid": true,
-		})
+		context.HTML(http.StatusOK, "register.tmpl", binders.GetRegisterBinding(false))
 		return
 	}
 }
@@ -142,33 +131,9 @@ func dashboard(context *gin.Context) {
 	}
 
 	// TODO make the dashboard template look nicer, add control buttons and endpoints
-	var e intern.MongoEntry
-	database.C("entries").Find(nil).Sort("-global_data.last_updated").One(&e)
-	var g intern.Global
-	if e.Global != nil {
-		g = *e.Global
-	} else {
-		context.Writer.Write([]byte("Please wait until first entry is fetched. Usually takes about 5 minutes."))
-		return
-	}
-	NumberOfEntries, _ := database.C("entries").Count()
-	update := time.Unix(int64(g.LastUpdated), 0)
-	context.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-		"TotalMarketCapUsd":            humanize.Commaf(g.TotalMarketCapUsd),
-		"Total24HVolumeUsd":            humanize.Commaf(g.Total24HVolumeUsd),
-		"BitcoinPercentageOfMarketCap": g.BitcoinPercentageOfMarketCap,
-		"ActiveCurrencies":             g.ActiveCurrencies,
-		"ActiveAssets":                 g.ActiveAssets,
-		"ActiveMarkets":                g.ActiveMarkets,
-		"LastUpdated":                  humanize.Time(update),
-		"NumberOfEntries":              NumberOfEntries,
-		"MongoUpdateStatus":            updater.Status(),
-	})
+	context.HTML(http.StatusOK, "dashboard.tmpl", binders.GetDashboardBinding(database, updater))
 }
 
 func forceLogin(context *gin.Context) {
-	context.HTML(http.StatusUnauthorized, "login.tmpl", gin.H{
-		"unauthorized":   true,
-		"justregistered": false,
-	})
+	context.HTML(http.StatusUnauthorized, "login.tmpl", binders.GetLoginBinding(true, false))
 }
