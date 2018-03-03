@@ -16,7 +16,7 @@ type Poller struct {
 	paused bool
 }
 
-// StartPoller initializes the poller and returns it
+// NewPoller initializes the poller and returns it
 func NewPoller() *Poller {
 	p := new(Poller)
 	p.gdata = new(CMC.GlobalData)
@@ -28,7 +28,7 @@ func NewPoller() *Poller {
 	return p
 }
 
-
+// Starts the Poller and listens for status updates
 func (p *Poller) Start() {
 	start := func() {
 		for range time.NewTicker(time.Second * 10).C {
