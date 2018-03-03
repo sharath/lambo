@@ -25,31 +25,33 @@ func NewPoller() *Poller {
 	p.Pause = make(chan struct{})
 	p.gdata = CMC.FetchStats()
 	p.last = p.gdata.LastUpdated
-	go p.start()
-	go p.listen()
 	return p
 }
 
-func (p *Poller) listen() {
-	select {
-	case <-p.Resume:
-		fmt.Println("Resuming")
-		p.paused = false
-	case <-p.Pause:
-		fmt.Println("Pausing")
-		p.paused = true
-	}
-}
 
-func (p *Poller) start() {
-	// check every 10 seconds
-	for range time.NewTicker(time.Second * 10).C {
-		if !p.paused {
-			p.gdata = CMC.FetchStats()
-			if p.gdata.LastUpdated != p.last {
-				p.last = p.gdata.LastUpdated
-				p.Update <- p.last
+func (p *Poller) Start() {
+	start := func() {
+		for range time.NewTicker(time.Second * 10).C {
+			if !p.paused {
+				p.gdata = CMC.FetchStats()
+				if p.gdata.LastUpdated != p.last {
+					p.last = p.gdata.LastUpdated
+					p.Update <- p.last
+				}
 			}
 		}
 	}
+	listen := func() {
+		select {
+		case <-p.Resume:
+			fmt.Println("Resuming")
+			p.paused = false
+		case <-p.Pause:
+			fmt.Println("Pausing")
+			p.paused = true
+		}
+	}
+
+	go listen()
+	go start()
 }
