@@ -14,14 +14,6 @@ import (
 var database *mgo.Database
 var updater *controllers.MongoUpdater
 
-func initialRun() bool {
-	count, _ := database.C("users").Count()
-	if count != 0 {
-		return false
-	}
-	return true
-}
-
 func main() {
 	s, err := mgo.Dial("localhost")
 	defer s.Close()
@@ -57,6 +49,13 @@ func main() {
 	router.Run(port)
 }
 
+func initialRun() bool {
+	count, _ := database.C("users").Count()
+	if count != 0 {
+		return false
+	}
+	return true
+}
 func signal(context *gin.Context) {
 	if !validsession(context) {
 		forceLogin(context)
@@ -70,15 +69,6 @@ func signal(context *gin.Context) {
 	}
 	dashboard(context)
 }
-
-func login(context *gin.Context) {
-	if initialRun() {
-		context.HTML(http.StatusOK, "register.tmpl", binders.GetRegisterBinding(false))
-		return
-	}
-	context.HTML(http.StatusOK, "login.tmpl", binders.GetLoginBinding(false, false))
-}
-
 func register(context *gin.Context) {
 	if initialRun() {
 		u := context.PostForm("username")
@@ -92,7 +82,6 @@ func register(context *gin.Context) {
 		return
 	}
 }
-
 func authenticate(context *gin.Context) {
 	u := context.PostForm("username")
 	p := context.PostForm("password")
@@ -107,7 +96,6 @@ func authenticate(context *gin.Context) {
 	http.SetCookie(context.Writer, user)
 	context.Redirect(303, "dashboard")
 }
-
 func validsession(context *gin.Context) bool {
 	authKey, err := context.Cookie("auth")
 	if err != nil {
@@ -123,17 +111,21 @@ func validsession(context *gin.Context) bool {
 	}
 	return true
 }
+func forceLogin(context *gin.Context) {
+	context.HTML(http.StatusUnauthorized, "login.tmpl", binders.GetLoginBinding(true, false))
+}
 
+func login(context *gin.Context) {
+	if initialRun() {
+		context.HTML(http.StatusOK, "register.tmpl", binders.GetRegisterBinding(false))
+		return
+	}
+	context.HTML(http.StatusOK, "login.tmpl", binders.GetLoginBinding(false, false))
+}
 func dashboard(context *gin.Context) {
 	if !validsession(context) {
 		forceLogin(context)
 		return
 	}
-
-	// TODO make the dashboard template look nicer, add control buttons and endpoints
 	context.HTML(http.StatusOK, "dashboard.tmpl", binders.GetDashboardBinding(database, updater))
-}
-
-func forceLogin(context *gin.Context) {
-	context.HTML(http.StatusUnauthorized, "login.tmpl", binders.GetLoginBinding(true, false))
 }
