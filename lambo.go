@@ -13,6 +13,7 @@ import (
 )
 
 var database *mgo.Database
+var updater *controllers.MongoUpdater
 
 func initialRun() bool {
 	count, _ := database.C("users").Count()
@@ -28,10 +29,10 @@ func main() {
 	if err != nil {
 		util.HandleError(err, true)
 	}
-	database = s.DB("lambo")
-	lim := 25
 
-	go controllers.StartMongoUpdater(database, lim)
+	database = s.DB("lambo")
+	updater = controllers.NewMongoUpdater(database, 25)
+	updater.Start()
 
 	prod := os.Getenv("LAMBO_PROD")
 	var port string
@@ -46,11 +47,29 @@ func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("views/templates/*")
 	router.Static("/static", "views/static")
+
 	router.GET("/", login)
+	router.GET("/dashboard", dashboard)
+
 	router.POST("/authenticate", authenticate)
 	router.POST("/register", register)
-	router.GET("/dashboard", dashboard)
+	router.POST("/dashboard/", signal)
+
 	router.Run(port)
+}
+
+func signal(context *gin.Context) {
+	if !validsession(context) {
+		forceLogin(context)
+		return
+	}
+	action := context.PostForm("action")
+	if action == "pause" {
+		updater.Pause()
+	} else if action == "resume" {
+		updater.Resume()
+	}
+	dashboard(context)
 }
 
 func login(context *gin.Context) {
@@ -100,20 +119,24 @@ func authenticate(context *gin.Context) {
 	context.Redirect(303, "dashboard")
 }
 
-func dashboard(context *gin.Context) {
+func validsession(context *gin.Context) bool {
 	authKey, err := context.Cookie("auth")
 	if err != nil {
-		forceLogin(context)
-		return
+		return false
 	}
 	id, err := context.Cookie("id")
 	if err != nil {
-		forceLogin(context)
-		return
+		return false
 	}
-
 	valid, err := intern.VerifyAuthKey(id, authKey, database.C("users"))
 	if err != nil || !valid {
+		return false
+	}
+	return true
+}
+
+func dashboard(context *gin.Context) {
+	if !validsession(context) {
 		forceLogin(context)
 		return
 	}
@@ -139,6 +162,7 @@ func dashboard(context *gin.Context) {
 		"ActiveMarkets":                g.ActiveMarkets,
 		"LastUpdated":                  humanize.Time(update),
 		"NumberOfEntries":              NumberOfEntries,
+		"MongoUpdateStatus":            updater.Status(),
 	})
 }
 
