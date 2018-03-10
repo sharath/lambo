@@ -1,7 +1,7 @@
-package controllers
+package poller
 
 import (
-	"github.com/sharath/lambo/models/extern/CMC"
+	"github.com/sharath/lambo/CMC"
 	"time"
 )
 

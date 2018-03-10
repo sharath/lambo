@@ -2,7 +2,7 @@ package CMC
 
 import (
 	"encoding/json"
-	"github.com/sharath/lambo/util"
+	"github.com/sharath/lambo/response"
 	"net/http"
 )
 
@@ -22,7 +22,7 @@ func FetchStats() *GlobalData {
 	g := new(GlobalData)
 	resp, err := http.Get("https://api.coinmarketcap.com/v1/global/")
 	if err != nil {
-		util.HandleError(err, false)
+		response.HandleError(err, false)
 	}
 	defer resp.Body.Close()
 	json.NewDecoder(resp.Body).Decode(&g)

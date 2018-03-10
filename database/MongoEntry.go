@@ -1,4 +1,4 @@
-package intern
+package database
 
 // Token represents each individual entry from the CMC api
 type Token struct {
