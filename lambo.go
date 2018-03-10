@@ -9,6 +9,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"net/http"
 	"os"
+	"time"
 )
 
 var lambo *mgo.Database
@@ -39,9 +40,12 @@ func main() {
 	}
 
 	r := gin.Default()
+	r.Use(gin.Recovery())
+	r.Use(gin.Logger())
 	r.GET("/", root)
 	r.POST("/register", register)
 	r.POST("/login", login)
+	r.GET("/do/:action", do)
 	r.Run(port)
 }
 
@@ -67,7 +71,6 @@ func register(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusBadRequest, response.NewStatus("missing username or password"))
-	return
 }
 
 func login(c *gin.Context) {
@@ -84,5 +87,21 @@ func login(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusBadRequest, response.NewStatus("invalid credentials"))
-	return
+}
+
+func do(c *gin.Context) {
+	action := c.Param("action")
+	switch action {
+	case "resume":
+		updater.Resume()
+		time.Sleep(time.Millisecond)
+		c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
+		return
+	case "pause":
+		updater.Pause()
+		time.Sleep(time.Millisecond)
+		c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
 }
