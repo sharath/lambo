@@ -12,7 +12,7 @@ func TestUserExists(t *testing.T) {
 	if err != nil {
 		t.FailNow()
 	}
-	users := s.DB("ot_test").C("users")
+	users := s.DB("lambo_test").C("users")
 	users.DropCollection()
 	u1, err := CreateUser("user1", "password", users)
 	if err != nil {
@@ -30,9 +30,9 @@ func TestUser(t *testing.T) {
 	if err != nil {
 		t.FailNow()
 	}
-	users := s.DB("ot_test").C("users")
+	users := s.DB("lambo_test").C("users")
 	users.DropCollection()
-	u, _ := CreateUser("ot_user", "password", users)
+	u, _ := CreateUser("lambo_user", "password", users)
 	token := u.Login("notpassword", users)
 	if token != "" {
 		fmt.Println("invalid password is working")
@@ -55,9 +55,9 @@ func TestUser_Authenticate(t *testing.T) {
 	if err != nil {
 		t.FailNow()
 	}
-	users := s.DB("ot_test").C("users")
+	users := s.DB("lambo_test").C("users")
 	users.DropCollection()
-	u, _ := CreateUser("ot_user", "password", users)
+	u, _ := CreateUser("lambo_user", "password", users)
 	token1 := u.Login("password", users)
 	if u.Authenticate("this shouldn't work") {
 		fmt.Println("invalid auth key working")
