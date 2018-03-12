@@ -1,9 +1,9 @@
-package controllers
+package poller
 
 import (
 	"encoding/json"
-	"github.com/sharath/lambo/models/extern/CMC"
-	"github.com/sharath/lambo/models/intern"
+	"github.com/sharath/lambo/CMC"
+	"github.com/sharath/lambo/database"
 	"gopkg.in/mgo.v2"
 )
 
@@ -16,9 +16,9 @@ type MongoUpdater struct {
 
 func (m *MongoUpdater) Status() string {
 	if m.P.paused {
-		return "Paused"
+		return "paused"
 	}
-	return "Running"
+	return "running"
 }
 
 // NewMongoUpdater initializes the MongoUpdater and returns it
@@ -33,9 +33,9 @@ func NewMongoUpdater(db *mgo.Database, lim int) *MongoUpdater {
 func (m *MongoUpdater) Start() {
 	// every time there's an update from poller
 	start := func() {
-		var me intern.MongoEntry
-		me.Tokens = make([]*intern.Token, m.lim)
-		me.Global = new(intern.Global)
+		var me database.MongoEntry
+		me.Tokens = make([]*database.Token, m.lim)
+		me.Global = new(database.Global)
 		var global *CMC.GlobalData
 		var entries []*CMC.Entry
 		m.P = NewPoller()

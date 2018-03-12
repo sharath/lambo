@@ -1,28 +1,35 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sharath/lambo/binders"
-	"github.com/sharath/lambo/controllers"
-	"github.com/sharath/lambo/models/intern"
-	"github.com/sharath/lambo/util"
+	auth "github.com/sharath/lambo/authentication"
+	"github.com/sharath/lambo/database"
+	"github.com/sharath/lambo/poller"
+	"github.com/sharath/lambo/response"
 	"gopkg.in/mgo.v2"
 	"net/http"
 	"os"
+	"time"
 )
 
-var database *mgo.Database
-var updater *controllers.MongoUpdater
+var lambo *mgo.Database
+var users *mgo.Collection
+var updater *poller.MongoUpdater
+var authmatrix auth.Matrix
 
 func main() {
 	s, err := mgo.Dial("localhost")
 	defer s.Close()
 	if err != nil {
-		util.HandleError(err, true)
+		fmt.Println(err)
+		os.Exit(-1)
 	}
 
-	database = s.DB("lambo")
-	updater = controllers.NewMongoUpdater(database, 25)
+	lambo = s.DB("lambo")
+	users = lambo.C("users")
+	authmatrix = auth.NewAuthenticationMatrix()
+	updater = poller.NewMongoUpdater(lambo, 25)
 	updater.Start()
 
 	prod := os.Getenv("LAMBO_PROD")
@@ -35,97 +42,84 @@ func main() {
 		port = ":80"
 	}
 
-	router := gin.Default()
-	router.LoadHTMLGlob("views/templates/*")
-	router.Static("/static", "views/static")
-
-	router.GET("/", login)
-	router.GET("/dashboard", dashboard)
-
-	router.POST("/authenticate", authenticate)
-	router.POST("/register", register)
-	router.POST("/dashboard/", signal)
-
-	router.Run(port)
+	r := gin.Default()
+	r.Use(gin.Recovery())
+	r.Use(gin.Logger())
+	r.GET("/", root)
+	r.POST("/register", register)
+	r.POST("/login", login)
+	r.GET("/do/:action", do)
+	r.Run(port)
 }
 
-func initialRun() bool {
-	count, _ := database.C("users").Count()
-	if count != 0 {
-		return false
+func authenticate(c *gin.Context) *database.User {
+	authkey := c.GetHeader("auth_key")
+	if authkey == "" {
+		return nil
 	}
-	return true
+	if user := database.FindUserByAuthKey(authkey, users, authmatrix); user != nil {
+		return user
+	}
+	return nil
 }
-func signal(context *gin.Context) {
-	if !validsession(context) {
-		forceLogin(context)
+
+func root(c *gin.Context) {
+	if lambo.Session.Ping() != nil {
+		c.JSON(http.StatusInternalServerError, response.NewStatus("Error Encountered"))
 		return
 	}
-	action := context.PostForm("action")
-	if action == "pause" {
-		updater.Pause()
-	} else if action == "resume" {
-		updater.Resume()
-	}
-	dashboard(context)
+	c.JSON(http.StatusOK, response.NewStatus("Normal Operation"))
 }
-func register(context *gin.Context) {
-	if initialRun() {
-		u := context.PostForm("username")
-		p := context.PostForm("password")
-		_, err := intern.CreateUser(u, p, database.C("users"))
-		if err == nil {
-			context.HTML(http.StatusOK, "login.tmpl", binders.GetLoginBinding(false, true))
+
+func register(c *gin.Context) {
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	if username != "" && password != "" {
+		u, err := database.CreateUser(username, password, users)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, response.NewStatus(err.Error()))
 			return
 		}
-		context.HTML(http.StatusOK, "register.tmpl", binders.GetRegisterBinding(false))
+		authKey := u.Login(password, users)
+		c.JSON(http.StatusOK, response.NewLogin(authKey))
 		return
 	}
-}
-func authenticate(context *gin.Context) {
-	u := context.PostForm("username")
-	p := context.PostForm("password")
-	id, authKey, err := intern.AuthenticateUser(u, p, database.C("users"))
-	if err != nil {
-		forceLogin(context)
-		return
-	}
-	auth := &http.Cookie{Name: "auth", Value: authKey, HttpOnly: false}
-	user := &http.Cookie{Name: "id", Value: id, HttpOnly: false}
-	http.SetCookie(context.Writer, auth)
-	http.SetCookie(context.Writer, user)
-	context.Redirect(303, "dashboard")
-}
-func validsession(context *gin.Context) bool {
-	authKey, err := context.Cookie("auth")
-	if err != nil {
-		return false
-	}
-	id, err := context.Cookie("id")
-	if err != nil {
-		return false
-	}
-	valid, err := intern.VerifyAuthKey(id, authKey, database.C("users"))
-	if err != nil || !valid {
-		return false
-	}
-	return true
-}
-func forceLogin(context *gin.Context) {
-	context.HTML(http.StatusUnauthorized, "login.tmpl", binders.GetLoginBinding(true, false))
+	c.JSON(http.StatusBadRequest, response.NewStatus("missing username or password"))
 }
 
-func login(context *gin.Context) {
-	if initialRun() {
-		context.HTML(http.StatusOK, "register.tmpl", binders.GetRegisterBinding(false))
-		return
+func login(c *gin.Context) {
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	if username != "" && password != "" {
+		u := database.FetchUser(username, users)
+		if u.Username != "" {
+			authKey := u.Login(password, users)
+			if authKey != "" {
+				c.JSON(http.StatusOK, response.NewLogin(authKey))
+				return
+			}
+		}
 	}
-	context.HTML(http.StatusOK, "login.tmpl", binders.GetLoginBinding(false, false))
+	c.JSON(http.StatusBadRequest, response.NewStatus("invalid credentials"))
 }
-func dashboard(context *gin.Context) {
-	if !validsession(context) {
-		forceLogin(context)
+
+func do(c *gin.Context) {
+	if user := authenticate(c); user != nil {
+		action := c.Param("action")
+		switch action {
+		case "resume":
+			updater.Resume()
+			time.Sleep(time.Millisecond)
+			c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
+			return
+		case "pause":
+			updater.Pause()
+			time.Sleep(time.Millisecond)
+			c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
 		return
 	}
-	context.HTML(http.StatusOK, "dashboard.tmpl", binders.GetDashboardBinding(database, updater))
+	c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
 }
