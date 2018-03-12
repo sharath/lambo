@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	auth "github.com/sharath/lambo/authentication"
 	"github.com/sharath/lambo/database"
 	"github.com/sharath/lambo/poller"
 	"github.com/sharath/lambo/response"
@@ -15,6 +16,7 @@ import (
 var lambo *mgo.Database
 var users *mgo.Collection
 var updater *poller.MongoUpdater
+var authmatrix auth.Matrix
 
 func main() {
 	s, err := mgo.Dial("localhost")
@@ -26,6 +28,7 @@ func main() {
 
 	lambo = s.DB("lambo")
 	users = lambo.C("users")
+	authmatrix = auth.NewAuthenticationMatrix()
 	updater = poller.NewMongoUpdater(lambo, 25)
 	updater.Start()
 
@@ -47,6 +50,17 @@ func main() {
 	r.POST("/login", login)
 	r.GET("/do/:action", do)
 	r.Run(port)
+}
+
+func authenticate(c *gin.Context) *database.User {
+	authkey := c.GetHeader("auth_key")
+	if authkey == "" {
+		return nil
+	}
+	if user := database.FindUserByAuthKey(authkey, users, authmatrix); user != nil {
+		return user
+	}
+	return nil
 }
 
 func root(c *gin.Context) {
@@ -90,18 +104,22 @@ func login(c *gin.Context) {
 }
 
 func do(c *gin.Context) {
-	action := c.Param("action")
-	switch action {
-	case "resume":
-		updater.Resume()
-		time.Sleep(time.Millisecond)
-		c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
-		return
-	case "pause":
-		updater.Pause()
-		time.Sleep(time.Millisecond)
+	if user := authenticate(c); user != nil {
+		action := c.Param("action")
+		switch action {
+		case "resume":
+			updater.Resume()
+			time.Sleep(time.Millisecond)
+			c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
+			return
+		case "pause":
+			updater.Pause()
+			time.Sleep(time.Millisecond)
+			c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
+	c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
 }
