@@ -75,3 +75,18 @@ func FetchUser(username string, users *mgo.Collection) *User {
 	users.Find(qry).One(&u)
 	return u
 }
+
+func FindUserByAuthKey(key string, users *mgo.Collection, matrix auth.Matrix) *User {
+	if matrix[key] != nil {
+		return matrix[key]
+	}
+	var usersarr []*User
+	users.Find(nil).All(&usersarr)
+	for _, u := range usersarr {
+		if u.Authenticate(key) {
+			matrix[key] = u
+			return u
+		}
+	}
+	return nil
+}
