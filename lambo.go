@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	auth "github.com/sharath/lambo/authentication"
-	"github.com/sharath/lambo/database"
 	"github.com/sharath/lambo/poller"
 	"github.com/sharath/lambo/response"
 	"gopkg.in/mgo.v2"
@@ -52,12 +51,12 @@ func main() {
 	r.Run(port)
 }
 
-func authenticate(c *gin.Context) *database.User {
+func authenticate(c *gin.Context) *auth.User {
 	authkey := c.GetHeader("auth_key")
 	if authkey == "" {
 		return nil
 	}
-	if user := database.FindUserByAuthKey(authkey, users, authmatrix); user != nil {
+	if user := auth.FindUserByAuthKey(authkey, users, authmatrix); user != nil {
 		return user
 	}
 	return nil
@@ -75,7 +74,7 @@ func register(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	if username != "" && password != "" {
-		u, err := database.CreateUser(username, password, users)
+		u, err := auth.CreateUser(username, password, users)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, response.NewStatus(err.Error()))
 			return
@@ -91,7 +90,7 @@ func login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	if username != "" && password != "" {
-		u := database.FetchUser(username, users)
+		u := auth.FetchUser(username, users)
 		if u.Username != "" {
 			authKey := u.Login(password, users)
 			if authKey != "" {

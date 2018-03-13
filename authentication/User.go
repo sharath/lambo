@@ -1,8 +1,7 @@
-package database
+package authentication
 
 import (
 	"errors"
-	auth "github.com/sharath/lambo/authentication"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -28,29 +27,29 @@ func CreateUser(username, password string, users *mgo.Collection) (*User, error)
 	}
 	u := new(User)
 	u.Username = username
-	u.Password = auth.Hash([]byte(password))
+	u.Password = Hash([]byte(password))
 	u.AuthKeys = make([][]byte, 5)
 	users.Insert(u)
 	return u, nil
 }
 
 func (u *User) Login(password string, users *mgo.Collection) string {
-	if auth.Compare(u.Password, []byte(password)) {
+	if Compare(u.Password, []byte(password)) {
 		payload := []byte(u.Username)
-		encKey := auth.NewEncryptionKey()
-		authToken := auth.Encrypt(payload, encKey)
+		encKey := NewEncryptionKey()
+		authToken := Encrypt(payload, encKey)
 		u.UpdateKeys(encKey, users)
-		encoded := string(auth.Encode(authToken)[:])
+		encoded := string(Encode(authToken)[:])
 		return encoded
 	}
 	return ""
 }
 
 func (u *User) Authenticate(encoded string) bool {
-	decoded := auth.Decode([]byte(encoded))
+	decoded := Decode([]byte(encoded))
 	for i := 0; i < 5; i++ {
 		if len(u.AuthKeys[i]) > 0 {
-			decrypted := auth.Decrypt(decoded, u.AuthKeys[i])
+			decrypted := Decrypt(decoded, u.AuthKeys[i])
 			if string(decrypted[:]) == u.Username {
 				return true
 			}
@@ -76,7 +75,7 @@ func FetchUser(username string, users *mgo.Collection) *User {
 	return u
 }
 
-func FindUserByAuthKey(key string, users *mgo.Collection, matrix auth.Matrix) *User {
+func FindUserByAuthKey(key string, users *mgo.Collection, matrix Matrix) *User {
 	if matrix[key] != nil {
 		return matrix[key]
 	}

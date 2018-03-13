@@ -1,8 +1,6 @@
 package authentication
 
-import "github.com/sharath/lambo/database"
-
-type Matrix map[string]*database.User
+type Matrix map[string]*User
 
 func NewAuthenticationMatrix() Matrix {
 	m := make(Matrix)
