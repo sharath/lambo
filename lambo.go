@@ -14,6 +14,7 @@ import (
 
 var lambo *mgo.Database
 var users *mgo.Collection
+var entries *mgo.Collection
 var updater *poller.MongoUpdater
 var authmatrix auth.Matrix
 
@@ -27,6 +28,7 @@ func main() {
 
 	lambo = s.DB("lambo")
 	users = lambo.C("users")
+	entries = lambo.C("entries")
 	authmatrix = auth.NewAuthenticationMatrix()
 	updater = poller.NewMongoUpdater(lambo, 25)
 	updater.Start()
@@ -47,6 +49,7 @@ func main() {
 	r.GET("/", root)
 	r.POST("/register", register)
 	r.POST("/login", login)
+	r.GET("/hist/:name", hist)
 	r.GET("/do/:action", do)
 	r.Run(port)
 }
@@ -118,6 +121,20 @@ func do(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
+		return
+	}
+	c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
+}
+
+func hist(c *gin.Context) {
+	if user := authenticate(c); user != nil {
+		name := c.Param("name")
+		format := response.NewHist(name, entries)
+		if len(format) < 1 {
+			c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
+			return
+		}
+		c.JSON(http.StatusOK, format)
 		return
 	}
 	c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
