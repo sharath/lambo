@@ -25,7 +25,6 @@ type Graph struct {
 func NewGraph(name string, entries *mgo.Collection) *Graph {
 	var all []*database.MongoEntry
 	entries.Find(nil).All(&all)
-	entries.Find(nil).All(&all)
 	pts := make(plotter.XYs, len(all))
 	for i, e := range all {
 		for _, t := range e.Tokens {
