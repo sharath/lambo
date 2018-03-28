@@ -6,15 +6,14 @@ Dashboard for CMC data collection for processing with [moon](https://github.com/
 
 ![lambo](centenario.png)
 
-## [Demo](https://lambo.sharath.pro)
+# Data Visualization
 
-Resets users and auto-updates with master using [demo](https://github.com/sharath/demo)
+![Bitcoin](sample.png)
 
 ## To-do
 
-- [ ] Dashboard Templating
-- [ ] Add Endpoints for Dashboard Functions (start, stop, etc)
+- [x] Basic data visualization
+- [x] Add Endpoints for Dashboard Functions (start, stop, etc)
 - [ ] Implement Frontend for Dashboard Functions
 - [ ] Monitoring specific coins
 - [ ] Alert System for Changes
-- [ ] Data Visualization (charts, etc)
