@@ -49,14 +49,14 @@ func main() {
 	r.GET("/", root)
 	r.POST("/register", register)
 	r.POST("/login", login)
-	r.GET("/hist/:name", hist)
-	r.GET("/graph/:name", graph)
-	r.GET("/do/:action", do)
+	r.POST("/hist/:name", hist)
+	r.POST("/graph/:name", graph)
+	r.POST("/do/:action", do)
 	r.Run(port)
 }
 
 func authenticate(c *gin.Context) *auth.User {
-	authkey := c.GetHeader("auth_key")
+	authkey := c.GetHeader("Authkey")
 	if authkey == "" {
 		return nil
 	}
