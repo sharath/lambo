@@ -5,7 +5,6 @@ import (
 	"github.com/sharath/lambo/database"
 	"gopkg.in/mgo.v2"
 	"image/color"
-	"os"
 	"path"
 	"strconv"
 
@@ -13,15 +12,11 @@ import (
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
-	"io/ioutil"
+	"strings"
 )
 
 type Graph struct {
 	Data string `json:"data" bson:"data"`
-}
-
-func clear() {
-	os.RemoveAll("gen")
 }
 
 func NewGraph(name string, entries *mgo.Collection) *Graph {
@@ -55,14 +50,11 @@ func NewGraph(name string, entries *mgo.Collection) *Graph {
 	l.LineStyle.Color = color.RGBA{B: 255, A: 255}
 
 	p.Add(l)
-	os.Mkdir("gen", 0777)
 	seed := make([]byte, 20)
 	rand.Read(seed)
-	filen := path.Join("gen", base64.StdEncoding.EncodeToString(seed)+".png")
+	filen := path.Join("static", "graph", strings.Replace(base64.StdEncoding.EncodeToString(seed)+".png", "/", "<", -1))
 	p.Save(4*vg.Inch, 4*vg.Inch, filen)
-	c, _ := ioutil.ReadFile(filen)
 	g := new(Graph)
-	g.Data = base64.StdEncoding.EncodeToString(c)
-	clear()
+	g.Data = filen
 	return g
 }
