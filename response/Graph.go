@@ -13,6 +13,7 @@ import (
 	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
 	"strings"
+	"time"
 )
 
 // Graph is a wrapper for the graph url
@@ -54,8 +55,9 @@ func NewGraph(name string, entries *mgo.Collection) *Graph {
 	p.Add(l)
 	seed := make([]byte, 20)
 	rand.Read(seed)
+	seed = append(seed, []byte(time.Now().String())...)
 	filen := path.Join("static", "graph", strings.Replace(base64.StdEncoding.EncodeToString(seed)+".png", "/", "<", -1))
-	p.Save(4*vg.Inch, 4*vg.Inch, filen)
+	p.Save(7*vg.Inch, 7*vg.Inch, filen)
 	g := new(Graph)
 	g.Data = filen
 	return g
