@@ -1,13 +1,15 @@
 package response
 
 import (
-	"testing"
+	"encoding/base64"
 	"gopkg.in/mgo.v2"
-	"fmt"
+	"io/ioutil"
+	"testing"
 )
 
 func TestNewGraph(t *testing.T) {
 	s, _ := mgo.Dial("localhost")
-	g := NewGraph("Ethereum",s.DB("lambo").C("entries"))
-	fmt.Println(g)
+	g := NewGraph("Ethereum", s.DB("lambo").C("entries"))
+	image, _ := base64.StdEncoding.DecodeString(g.Data)
+	ioutil.WriteFile("test.png", image, 0777)
 }

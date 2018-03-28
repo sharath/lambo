@@ -1,17 +1,17 @@
 package response
 
 import (
-	"gopkg.in/mgo.v2"
+	"encoding/base64"
 	"github.com/sharath/lambo/database"
-	"strconv"
+	"gopkg.in/mgo.v2"
 	"image/color"
 	"os"
 	"path"
-	"encoding/base64"
+	"strconv"
 
 	"crypto/rand"
-	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot"
+	"github.com/gonum/plot/plotter"
 	"github.com/gonum/plot/vg"
 	"io/ioutil"
 )
