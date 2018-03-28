@@ -6,7 +6,7 @@ import (
 
 // Hash bcrypt hashes a byte array and returns it
 func Hash(plaintext []byte) []byte {
-	v, err := bcrypt.GenerateFromPassword(plaintext, 14)
+	v, err := bcrypt.GenerateFromPassword(plaintext, 10)
 	if err != nil {
 		return nil
 	}
