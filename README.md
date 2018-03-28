@@ -2,7 +2,7 @@
 
 # lambo
 
-Dashboard for CMC data collection for processing with [moon](https://github.com/sharath/moon)
+Dashboard for CMC data collection, processing, and visualization
 
 ![lambo](centenario.png)
 
@@ -17,3 +17,4 @@ Dashboard for CMC data collection for processing with [moon](https://github.com/
 - [ ] Implement Frontend for Dashboard Functions
 - [ ] Monitoring specific coins
 - [ ] Alert System for Changes
+- [ ] Predictions
