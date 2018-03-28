@@ -50,6 +50,7 @@ func main() {
 	r.POST("/register", register)
 	r.POST("/login", login)
 	r.GET("/hist/:name", hist)
+	r.GET("/graph/:name", graph)
 	r.GET("/do/:action", do)
 	r.Run(port)
 }
@@ -133,6 +134,19 @@ func hist(c *gin.Context) {
 		if len(format) < 1 {
 			c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
 			return
+		}
+		c.JSON(http.StatusOK, format)
+		return
+	}
+	c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
+}
+
+func graph(c *gin.Context) {
+	if user := authenticate(c); user != nil {
+		token := c.Param("name")
+		format := response.NewGraph(token, entries)
+		if format.Data != "" {
+			c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
 		}
 		c.JSON(http.StatusOK, format)
 		return
