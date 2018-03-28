@@ -69,7 +69,7 @@ func root(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, response.NewStatus("Error Encountered"))
 		return
 	}
-	c.JSON(http.StatusOK, response.NewStatus("Normal Operation"))
+	c.JSON(http.StatusOK, response.NewRootStatus("Normal Operation", updater.Status()))
 }
 
 func register(c *gin.Context) {
@@ -112,14 +112,16 @@ func do(c *gin.Context) {
 			updater.Resume()
 			time.Sleep(time.Millisecond)
 			c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
-			return
+			break
 		case "pause":
 			updater.Pause()
 			time.Sleep(time.Millisecond)
 			c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
-			return
+			break
+		default:
+			c.JSON(http.StatusBadRequest, response.NewStatus("bad request"))
+			break
 		}
-		c.JSON(http.StatusOK, gin.H{"status": updater.Status(), "time": time.Now().Unix()})
 		return
 	}
 	c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))

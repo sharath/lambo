@@ -17,9 +17,9 @@ type MongoUpdater struct {
 // Status returns the current status of the mongoupdater
 func (m *MongoUpdater) Status() string {
 	if m.P.paused {
-		return "paused"
+		return "Paused"
 	}
-	return "running"
+	return "Running"
 }
 
 // NewMongoUpdater initializes the MongoUpdater and returns it
