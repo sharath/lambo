@@ -6,6 +6,7 @@ import (
 	auth "github.com/sharath/lambo/authentication"
 	"github.com/sharath/lambo/poller"
 	"github.com/sharath/lambo/response"
+	"github.com/sharath/lambo/visualization"
 	"gopkg.in/mgo.v2"
 	"net/http"
 	"os"
@@ -32,6 +33,7 @@ func main() {
 	authmatrix = auth.NewAuthenticationMatrix()
 	updater = poller.NewMongoUpdater(lambo, 25)
 	updater.Start()
+	visualization.AutoGraph(updater, entries)
 
 	prod := os.Getenv("LAMBO_PROD")
 	var port string
