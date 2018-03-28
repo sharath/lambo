@@ -15,10 +15,12 @@ import (
 	"strings"
 )
 
+// Graph is a wrapper for the graph url
 type Graph struct {
 	Data string `json:"data" bson:"data"`
 }
 
+// NewGraph makes a new graph and returns the url wrapper
 func NewGraph(name string, entries *mgo.Collection) *Graph {
 	var all []*database.MongoEntry
 	entries.Find(nil).All(&all)

@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// User database object for user
 type User struct {
 	ID       bson.ObjectId `bson:"_id,omitempty"`
 	Username string
@@ -13,11 +14,13 @@ type User struct {
 	AuthKeys [][]byte
 }
 
+// UserExists checks if user with specified username exists in specified collection
 func UserExists(username string, users *mgo.Collection) bool {
 	u := FetchUser(username, users)
 	return u != nil
 }
 
+// CreateUser makes a new user and inserts into specified collection
 func CreateUser(username, password string, users *mgo.Collection) (*User, error) {
 	if users == nil {
 		return nil, errors.New("no collection provided")
@@ -33,6 +36,7 @@ func CreateUser(username, password string, users *mgo.Collection) (*User, error)
 	return u, nil
 }
 
+// Login logins a user and returns an authentication string
 func (u *User) Login(password string, users *mgo.Collection) string {
 	if Compare(u.Password, []byte(password)) {
 		payload := []byte(u.Username)
@@ -45,6 +49,7 @@ func (u *User) Login(password string, users *mgo.Collection) string {
 	return ""
 }
 
+// Authenticate checks authentication key to see if its valid
 func (u *User) Authenticate(encoded string) bool {
 	decoded := Decode([]byte(encoded))
 	for i := 0; i < 5; i++ {
@@ -58,6 +63,7 @@ func (u *User) Authenticate(encoded string) bool {
 	return false
 }
 
+// UpdateKeys expires and "old" key and replaces it with a new one
 func (u *User) UpdateKeys(newKey []byte, users *mgo.Collection) {
 	for i := 3; i >= 0; i-- {
 		u.AuthKeys[i+1] = u.AuthKeys[i]
@@ -68,6 +74,7 @@ func (u *User) UpdateKeys(newKey []byte, users *mgo.Collection) {
 	users.Update(qry, update)
 }
 
+// FetchUser returns a user object from the username
 func FetchUser(username string, users *mgo.Collection) *User {
 	qry := bson.M{"username": username}
 	var u *User
@@ -75,6 +82,7 @@ func FetchUser(username string, users *mgo.Collection) *User {
 	return u
 }
 
+// FindUserByAuthKey returns a user object from the authkey
 func FindUserByAuthKey(key string, users *mgo.Collection, matrix Matrix) *User {
 	if matrix[key] != nil {
 		return matrix[key]

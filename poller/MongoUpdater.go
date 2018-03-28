@@ -14,6 +14,7 @@ type MongoUpdater struct {
 	lim int
 }
 
+// Status returns the current status of the mongoupdater
 func (m *MongoUpdater) Status() string {
 	if m.P.paused {
 		return "paused"

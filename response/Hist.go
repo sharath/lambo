@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+// Hist is the response format for the hist endpoint
 type Hist struct {
 	Name           string `json:"name" bson:"name"`
 	Symbol         string `json:"symbol" bson:"symbol"`
@@ -16,6 +17,7 @@ type Hist struct {
 	LastUpdated    string `json:"last_updated" bson:"last_updated"`
 }
 
+// NewHist returns a response for the hist endpoint
 func NewHist(name string, entries *mgo.Collection) []Hist {
 	var all []*database.MongoEntry
 	var hist []Hist

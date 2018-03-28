@@ -7,6 +7,7 @@ import (
 	"io"
 )
 
+// NewEncryptionKey generates a random encryption key
 func NewEncryptionKey() []byte {
 	var key = make([]byte, 32)
 	_, err := io.ReadFull(rand.Reader, key[:])
@@ -16,6 +17,7 @@ func NewEncryptionKey() []byte {
 	return key
 }
 
+// Encrypt encrypts an input using the key and returns the encrypted result
 func Encrypt(plaintext []byte, key []byte) (ciphertext []byte) {
 	block, err := aes.NewCipher(key[:])
 	if err != nil {
@@ -36,6 +38,7 @@ func Encrypt(plaintext []byte, key []byte) (ciphertext []byte) {
 	return gcm.Seal(nonce, nonce, plaintext, nil)
 }
 
+// Decrypt decrypts an input using the key and returns the plaintext result
 func Decrypt(ciphertext []byte, key []byte) (plaintext []byte) {
 	block, err := aes.NewCipher(key[:])
 	if err != nil {

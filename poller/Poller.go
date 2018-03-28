@@ -28,7 +28,7 @@ func NewPoller() *Poller {
 	return p
 }
 
-// Starts the Poller and listens for status updates
+// Start the Poller and listens for status updates
 func (p *Poller) Start() {
 	start := func() {
 		for range time.NewTicker(time.Second * 10).C {

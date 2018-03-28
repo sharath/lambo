@@ -61,10 +61,7 @@ func authenticate(c *gin.Context) *auth.User {
 	if authkey == "" {
 		return nil
 	}
-	if user := auth.FindUserByAuthKey(authkey, users, authmatrix); user != nil {
-		return user
-	}
-	return nil
+	return auth.FindUserByAuthKey(authkey, users, authmatrix)
 }
 
 func root(c *gin.Context) {
