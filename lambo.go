@@ -46,6 +46,7 @@ func main() {
 	r := gin.Default()
 	r.Use(gin.Recovery())
 	r.Use(gin.Logger())
+	r.Static("/static", "static")
 	r.GET("/", root)
 	r.POST("/register", register)
 	r.POST("/login", login)
@@ -132,7 +133,7 @@ func hist(c *gin.Context) {
 		name := c.Param("name")
 		format := response.NewHist(name, entries)
 		if len(format) < 1 {
-			c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
+			c.JSON(http.StatusBadRequest, response.NewStatus("bad request"))
 			return
 		}
 		c.JSON(http.StatusOK, format)
@@ -145,8 +146,9 @@ func graph(c *gin.Context) {
 	if user := authenticate(c); user != nil {
 		token := c.Param("name")
 		format := response.NewGraph(token, entries)
-		if format.Data != "" {
-			c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
+		if format.Data == "" {
+			c.JSON(http.StatusBadRequest, response.NewStatus("bad request"))
+			return
 		}
 		c.JSON(http.StatusOK, format)
 		return
