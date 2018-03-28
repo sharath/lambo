@@ -18,14 +18,14 @@ func NewStatus(status string) *Status {
 	return s
 }
 
-// Status is the response format for the current status of the server
+// RootStatus is the response format for the overall operational status of the server
 type RootStatus struct {
 	DB     string `json:"database"`
 	Poller string `json:"poller"`
 	Time   int64  `json:"time"`
 }
 
-// NewStatus returns a filled status object
+// NewRootStatus returns a filled RootStatus object
 func NewRootStatus(dbstatus, pstatus string) *RootStatus {
 	s := new(RootStatus)
 	s.Time = time.Now().Unix()
