@@ -6,7 +6,6 @@ import (
 	auth "github.com/sharath/lambo/authentication"
 	"github.com/sharath/lambo/poller"
 	"github.com/sharath/lambo/response"
-	"github.com/sharath/lambo/visualization"
 	"gopkg.in/mgo.v2"
 	"net/http"
 	"os"
@@ -33,7 +32,6 @@ func main() {
 	authmatrix = auth.NewAuthenticationMatrix()
 	updater = poller.NewMongoUpdater(lambo, 25)
 	updater.Start()
-	visualization.AutoGraph(updater, entries)
 
 	prod := os.Getenv("LAMBO_PROD")
 	var port string
@@ -146,7 +144,8 @@ func hist(c *gin.Context) {
 func graph(c *gin.Context) {
 	if user := authenticate(c); user != nil {
 		token := c.Param("name")
-		format := response.NewGraph(token, entries)
+		kind := c.DefaultQuery("type", "priceusd")
+		format := response.NewGraphResp(token, kind, entries)
 		if format.Data == "" {
 			c.JSON(http.StatusBadRequest, response.NewStatus("bad request"))
 			return
