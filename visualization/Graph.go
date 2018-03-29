@@ -10,6 +10,7 @@ import (
 	"github.com/sharath/lambo/database"
 	"gopkg.in/mgo.v2"
 	"image/color"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -34,10 +35,14 @@ func NewGraph(name, kind string, entries *mgo.Collection) string {
 		p = change1hr(name, all)
 		break
 	}
-	seed := make([]byte, 20)
+	seed := make([]byte, 5)
 	rand.Read(seed)
 	seed = append(seed, []byte(time.Now().String())...)
-	filename := path.Join("static", "graph", strings.Replace(base64.StdEncoding.EncodeToString(seed)+".png", "/", "<", -1))
+	folder := path.Join("static", "graph")
+	filename := path.Join(folder, strings.Replace(base64.StdEncoding.EncodeToString(seed)+".png", "/", "<", -1))
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		os.MkdirAll(folder, os.ModePerm)
+	}
 	p.Save(vg.Inch*7, vg.Inch*7, filename)
 	return filename
 }
