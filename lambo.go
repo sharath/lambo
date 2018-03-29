@@ -144,7 +144,7 @@ func hist(c *gin.Context) {
 func graph(c *gin.Context) {
 	if user := authenticate(c); user != nil {
 		token := c.Param("name")
-		kind := c.DefaultQuery("type", "priceusd")
+		kind := c.DefaultPostForm("type", "timeusd")
 		format := response.NewGraphResp(token, kind, entries)
 		if format.Data == "" {
 			c.JSON(http.StatusBadRequest, response.NewStatus("bad request"))
