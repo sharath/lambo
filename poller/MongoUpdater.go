@@ -30,6 +30,11 @@ func NewMongoUpdater(db *mgo.Database, lim int) *MongoUpdater {
 	return m
 }
 
+// GetLim returns limit
+func (m *MongoUpdater) GetLim() int {
+	return m.lim
+}
+
 // Start starts the MongoUpdater
 func (m *MongoUpdater) Start() {
 	// every time there's an update from poller
