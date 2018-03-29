@@ -7,7 +7,7 @@ import (
 
 type Tokens []string
 
-func NewTokens(entries *mgo.Collection, size int) Tokens {
+func NewTokens(entries *mgo.Collection) Tokens {
 	var all []*database.MongoEntry
 	entries.Find(nil).All(&all)
 	var t Tokens
