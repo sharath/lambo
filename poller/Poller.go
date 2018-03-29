@@ -33,7 +33,11 @@ func (p *Poller) Start() {
 	start := func() {
 		for range time.NewTicker(time.Second * 10).C {
 			if !p.paused {
-				p.gdata = CMC.FetchStats()
+				t := CMC.FetchStats()
+				if t == nil {
+					continue
+				}
+				p.gdata = t
 				if p.gdata.LastUpdated != p.last {
 					p.last = p.gdata.LastUpdated
 					p.Update <- p.last
