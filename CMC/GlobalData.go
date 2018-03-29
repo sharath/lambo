@@ -23,6 +23,7 @@ func FetchStats() *GlobalData {
 	resp, err := http.Get("https://api.coinmarketcap.com/v1/global/")
 	if err != nil {
 		fmt.Println(err)
+		return g
 	}
 	defer resp.Body.Close()
 	json.NewDecoder(resp.Body).Decode(&g)
