@@ -22,17 +22,18 @@ func AutoGraph(updater *poller.MongoUpdater, entries *mgo.Collection) {
 			for i := 0; i < len(all); i++ {
 				name := all[0].Tokens[i].Name
 				pts := make(plotter.XYs, len(all))
-				for _, e := range all {
+				for j, e := range all {
 					for _, t := range e.Tokens {
 						if t.Name == name {
 							x, _ := strconv.ParseFloat(t.LastUpdated, 63)
 							y, _ := strconv.ParseFloat(t.PriceUsd, 63)
-							pts[i].X = x
-							pts[i].Y = y
+							pts[j].X = x
+							pts[j].Y = y
 						}
 					}
 				}
 				p, _ := plot.New()
+
 				p.Title.Text = name
 				p.X.Label.Text = "Time"
 				p.Y.Label.Text = "PriceUSD"
