@@ -2,7 +2,7 @@
 
 # lambo
 
-Dashboard for CMC data collection, processing, and visualization
+Dashboard for Coinmarketcap data collection, processing, and visualization
 
 ![lambo](centenario.png)
 
