@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/sharath/lambo/CMC"
 	"github.com/sharath/lambo/database"
-	"gopkg.in/mgo.v2"
+	"github.com/globalsign/mgo"
 )
 
 // MongoUpdater adds MongoEntries into MongoDB on each tick from Poller

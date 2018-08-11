@@ -1,4 +1,4 @@
-package lambo
+package main
 
 import (
 	"fmt"

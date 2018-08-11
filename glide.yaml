@@ -1,0 +1,11 @@
+package: github.com/sharath/lambo
+import:
+- package: github.com/gin-gonic/gin
+  version: ^1.2.0
+- package: github.com/globalsign/mgo
+  subpackages:
+  - bson
+- package: golang.org/x/crypto
+  subpackages:
+  - bcrypt
+- package: gopkg.in/mgo.v2
