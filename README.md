@@ -9,12 +9,3 @@ Dashboard for Coinmarketcap data collection, processing, and visualization
 # Data Visualization
 
 ![Bitcoin](sample.png)
-
-## To-do
-
-- [x] Basic data visualization
-- [x] Add Endpoints for Dashboard Functions (start, stop, etc)
-- [ ] Implement Frontend for Dashboard Functions
-- [ ] Monitoring specific coins
-- [ ] Alert System for Changes
-- [ ] Predictions
