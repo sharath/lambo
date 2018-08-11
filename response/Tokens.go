@@ -2,7 +2,7 @@ package response
 
 import (
 	"github.com/sharath/lambo/database"
-	"gopkg.in/mgo.v2"
+	"github.com/globalsign/mgo"
 )
 
 type Tokens []string

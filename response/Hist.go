@@ -3,7 +3,7 @@ package response
 import (
 	"encoding/json"
 	"github.com/sharath/lambo/database"
-	"gopkg.in/mgo.v2"
+	"github.com/globalsign/mgo"
 )
 
 // Hist is the response format for the hist endpoint

@@ -2,7 +2,7 @@ package response
 
 import (
 	"github.com/sharath/lambo/visualization"
-	"gopkg.in/mgo.v2"
+	"github.com/globalsign/mgo"
 )
 
 // Graph is a wrapper for the graph url

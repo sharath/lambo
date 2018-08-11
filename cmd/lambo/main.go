@@ -1,4 +1,4 @@
-package main
+package lambo
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	auth "github.com/sharath/lambo/authentication"
 	"github.com/sharath/lambo/poller"
 	"github.com/sharath/lambo/response"
-	"gopkg.in/mgo.v2"
+	"github.com/globalsign/mgo"
 	"net/http"
 	"os"
 	"time"
@@ -51,7 +51,6 @@ func main() {
 	r.POST("/register", register)
 	r.POST("/login", login)
 	r.POST("/hist/:name", hist)
-	r.POST("/graph/:name", graph)
 	r.POST("/tokens", tokens)
 	r.POST("/do/:action", do)
 	r.Run(port)
@@ -146,21 +145,6 @@ func tokens(c *gin.Context) {
 	if user := authenticate(c); user != nil {
 		format := response.NewTokens(entries)
 		if len(format) < 1 {
-			c.JSON(http.StatusBadRequest, response.NewStatus("bad request"))
-			return
-		}
-		c.JSON(http.StatusOK, format)
-		return
-	}
-	c.JSON(http.StatusUnauthorized, response.NewStatus("unauthorized"))
-}
-
-func graph(c *gin.Context) {
-	if user := authenticate(c); user != nil {
-		token := c.Param("name")
-		kind := c.DefaultPostForm("type", "timeusd")
-		format := response.NewGraphResp(token, kind, entries)
-		if format.Data == "" {
 			c.JSON(http.StatusBadRequest, response.NewStatus("bad request"))
 			return
 		}
